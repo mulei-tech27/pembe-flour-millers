@@ -116,9 +116,7 @@ function renderProducts(list) {
 
     return `
       <div class="product-card" id="card-${p.id}">
-        <div class="product-img-placeholder ${p.bg}">
-  <img src="${p.image}" alt="${p.name}">
-</div>
+        <img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy">
         <div class="product-info">
           ${p.badge ? '<span class="product-badge">' + p.badge + '</span>' : ''}
           <span class="product-category">${getCategoryLabel(p.category)}</span>
@@ -199,7 +197,16 @@ function addToCart(id) {
   if (existing) {
     existing.qty += qty;
   } else {
-    cart.push({ key, id, name: product.name, emoji: product.emoji, size: size.label, price: size.price, qty });
+    /* ✅ FIXED: use product.image instead of product.emoji */
+    cart.push({
+      key,
+      id,
+      name:  product.name,
+      image: product.image,
+      size:  size.label,
+      price: size.price,
+      qty
+    });
   }
 
   updateCartUI();
@@ -208,7 +215,10 @@ function addToCart(id) {
   if (btn) {
     btn.textContent = '✓ Added!';
     btn.classList.add('added');
-    setTimeout(function() { btn.textContent = 'Add to Cart'; btn.classList.remove('added'); }, 1500);
+    setTimeout(function() {
+      btn.textContent = 'Add to Cart';
+      btn.classList.remove('added');
+    }, 1500);
   }
 
   showToast(qty + '× ' + product.name + ' (' + size.label + ') added to cart');
@@ -237,10 +247,13 @@ function updateCartUI() {
     return;
   }
 
+  /* ✅ FIXED: show actual product image in cart instead of emoji */
   body.innerHTML = cart.map(function(item, index) {
     return `
       <div class="cart-item">
-        <div class="cart-item-icon">${item.emoji}</div>
+        <div class="cart-item-icon">
+          <img src="${item.image}" alt="${item.name}">
+        </div>
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
           <div class="cart-item-size">${item.size} × ${item.qty}</div>
@@ -275,7 +288,7 @@ function whatsappOrder() {
   const lines = cart.map(function(item) { return item.name + ' (' + item.size + ') ×' + item.qty; }).join(', ');
   const total = cart.reduce(function(s, c) { return s + c.price * c.qty; }, 0);
   const msg   = 'Hello Pembe Flour Millers! I would like to order: ' + lines + '. Total: KSh ' + total.toLocaleString() + '. Please confirm. Thank you!';
-  window.open('https://wa.me/254700000000?text=' + encodeURIComponent(msg), '_blank');
+  window.open('https://wa.me/254745319126?text=' + encodeURIComponent(msg), '_blank');
 }
 
 /* ---- TOAST ---- */
