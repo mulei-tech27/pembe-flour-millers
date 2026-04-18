@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="images/favicon.png" />
+  <meta name="description" content="Pembe Flour Millers — Premium wheat flour, maize flour and animal feed in Meru, Kenya. Order online or via WhatsApp." />
+<meta name="keywords" content="flour, wheat flour, maize flour, unga, Meru, Kenya, animal feed" />
+<meta property="og:title" content="Pembe Flour Millers" />
+<meta property="og:description" content="Quality flour milled fresh in Meru, Kenya." />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pembe Flour Millers - About Us</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+ <header class="site-header">
+  <div class="logo">
+    <img src="images/pembe-logo.png" alt="Pembe Logo" class="logo-img" />
+    <div class="logo-text">
+      <span class="logo-name">Pembe</span>
+      <span class="logo-tagline">Flour Millers</span>
+    </div>
+  </div>
+  <nav class="nav-links" id="nav-links">
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+  <a href="products.html" class="cart-btn">🛒 Shop Now</a>
+</header>
+
+<script>
+  function toggleMenu() {
+    document.getElementById('nav-links').classList.toggle('open');
+    document.getElementById('hamburger').classList.toggle('open');
+  }
+</script>
+
+  <section class="page-hero">
+    <h1>About Us</h1>
+    <p>Our story, our mission, and the people behind the flour.</p>
+  </section>
+
+  <section class="section about-page">
+
+    <div class="about-block">
+      <div class="about-img">
+   <img src="images/pembe-millers.png" alt="Pembe Flour Mills Story">
+</div>
+      <div class="about-text-block">
+        <h2>Our Story</h2>
+        <p>Pembe Flour Mills Ltd was founded in 1989 in a small section of Nairobi Industrial Area., Pembe Flour Millers
+           started with a simple mission: bring high-quality, affordable flour
+           to Kenyan families and businesses.</p>
+        <p>What began as a small community mill has grown into a trusted brand,
+           supplying wheat flour, maize flour, and animal feed to homes,
+           restaurants, and farms across the region.</p>
+      </div>
+    </div>
+
+    <div class="about-block reverse">
+      <div class="about-img">
+   <img src="images/pembe-label.png" alt="Pembe Flour Mills Story">
+</div>
+      <div class="about-text-block">
+        <h2>Our Mission</h2>
+        <p>Pembe Flour Mills Ltd is committed to producing and supplying superior flour products that contribute to the health and well-being of consumers, while exceeding customer expectations through continuous improvement, innovation, and sustainable practices.</p>
+        <p>We work closely with local farmers, ensuring fair prices for their
+           grain and a shorter, fresher supply chain for our customers.</p>
+      </div>
+    </div>
+
+    <div class="values-section">
+      <h2 class="section-title">Our Values</h2>
+      <div class="values-grid">
+        <div class="value-card">
+          <span>🌿</span>
+          <h3>Sustainability</h3>
+          <p>We minimize waste and work with local farmers to reduce our carbon footprint.</p>
+        </div>
+        <div class="value-card">
+          <span>🤝</span>
+          <h3>Community</h3>
+          <p>Proudly Kenyan. We reinvest in Nairobi County and the farmers who supply us from the neighbouring countries and all over the country.</p>
+        </div>
+        <div class="value-card">
+          <span>⭐</span>
+          <h3>Quality</h3>
+          <p>Every bag passes rigorous quality checks before it reaches your kitchen.</p>
+        </div>
+        <div class="value-card">
+          <span>💛</span>
+          <h3>Transparency</h3>
+          <p>Honest pricing, honest ingredients. You always know what you're getting.</p>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-col">
+      <strong class="footer-logo">Pembe Flour Millers</strong>
+      <p>Quality you can taste.<br>Nairobi, Kenya.</p>
+    </div>
+    <div class="footer-col">
+      <strong>Quick Links</strong>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <strong>Contact Us</strong>
+      <p>📞 +254 745 319 126</p>
+      <p>✉️ orders@pembeflourmillers.com</p>
+      <p>📍 Nairobi City, Kenya</p>
+    </div>
+  </footer>
+  <div class="footer-copy">© 2026 Pembe Flour Millers. All Rights Reserved.</div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  window.addEventListener('scroll', function() {
+    const btn = document.getElementById('backToTop');
+    if (window.scrollY > 400) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  });
+</script>
+</body>
+</html>

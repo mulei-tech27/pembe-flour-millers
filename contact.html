@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="images/favicon.png" />
+  <meta name="description" content="Pembe Flour Millers — Premium wheat flour, maize flour and animal feed in Meru, Kenya. Order online or via WhatsApp." />
+<meta name="keywords" content="flour, wheat flour, maize flour, unga, Meru, Kenya, animal feed" />
+<meta property="og:title" content="Pembe Flour Millers" />
+<meta property="og:description" content="Quality flour milled fresh in Meru, Kenya." />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pembe Flour Millers - Contact</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+ <header class="site-header">
+  <div class="logo">
+    <img src="images/pembe-logo.png" alt="Pembe Logo" class="logo-img" />
+    <div class="logo-text">
+      <span class="logo-name">Pembe</span>
+      <span class="logo-tagline">Flour Millers</span>
+    </div>
+  </div>
+  <nav class="nav-links" id="nav-links">
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+  <a href="products.html" class="cart-btn">🛒 Shop Now</a>
+</header>
+
+<script>
+  function toggleMenu() {
+    document.getElementById('nav-links').classList.toggle('open');
+    document.getElementById('hamburger').classList.toggle('open');
+  }
+</script>
+
+  <section class="page-hero">
+    <h1>Contact Us</h1>
+    <p>We'd love to hear from you. Reach out for orders, enquiries or partnerships.</p>
+  </section>
+
+  <section class="section contact-page">
+
+    <div class="contact-details">
+      <h2>Get in Touch</h2>
+      <div class="contact-item">
+        <span>📞</span>
+        <div>
+          <strong>Phone / WhatsApp</strong>
+          <p>+254 745 319 126</p>
+        </div>
+      </div>
+      <div class="contact-item">
+        <span>✉️</span>
+        <div>
+          <strong>Email</strong>
+          <p>orders@pembeflourmillers.com</p>
+        </div>
+      </div>
+      <div class="contact-item">
+        <span>📍</span>
+        <div>
+          <strong>Address</strong>
+          <p>Industrial Area Lunga Lunga Road, Nairobi County, Kenya</p>
+        </div>
+      </div>
+      <div class="contact-item">
+        <span>🕐</span>
+        <div>
+          <strong>Business Hours</strong>
+          <p>Mon – Sat: 8:00 AM – 6:00 PM</p>
+        </div>
+      </div>
+      
+        href="https://wa.me/254745319126?text=Hello%20Pembe%20Flour%20Millers!"
+        class="whatsapp-btn"
+        target="_blank"
+      >
+        💬 Chat on WhatsApp
+      </a>
+    </div>
+
+    <div class="contact-form-wrap">
+      <h2>Send a Message</h2>
+      <form id="contact-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Full Name *</label>
+            <input type="text" id="name" placeholder="Your full name" required />
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone / Email *</label>
+            <input type="text" id="phone" placeholder="+254 700 000 000" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="subject">Subject</label>
+          <input type="text" id="subject" placeholder="e.g. Bulk order inquiry" />
+        </div>
+        <div class="form-group">
+          <label for="message">Message *</label>
+          <textarea id="message" rows="5" placeholder="Describe what you need..." required></textarea>
+        </div>
+        <button type="submit" class="btn-primary full-width">Send Message →</button>
+        <div class="form-success" id="form-success">
+          ✅ Message sent! We'll get back to you within 24 hours.
+        </div>
+      </form>
+    </div>
+
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-col">
+      <strong class="footer-logo">Pembe Flour Millers</strong>
+      <p>Quality you can taste.<br>Nairobi, Kenya.</p>
+    </div>
+    <div class="footer-col">
+      <strong>Quick Links</strong>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <strong>Contact Us</strong>
+      <p>📞 +254 745 319 126</p>
+      <p>✉️ orders@pembeflourmillers.com</p>
+      <p>📍 Nairobi Town, Kenya</p>
+    </div>
+  </footer>
+  <div class="footer-copy">© 2026 Pembe Flour Millers. All Rights Reserved.</div>
+
+  <script>
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name    = document.getElementById('name').value;
+      const phone   = document.getElementById('phone').value;
+      const subject = document.getElementById('subject').value || 'Website Inquiry';
+      const message = document.getElementById('message').value;
+      const email   = 'orders@pembeflourmillers.com';
+      const body    = 'Name: ' + name + '\nContact: ' + phone + '\n\n' + message;
+      window.location.href =
+        'mailto:' + email +
+        '?subject=' + encodeURIComponent(subject) +
+        '&body='    + encodeURIComponent(body);
+      document.getElementById('form-success').style.display = 'block';
+    });
+  </script>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  window.addEventListener('scroll', function() {
+    const btn = document.getElementById('backToTop');
+    if (window.scrollY > 400) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  });
+</script>
+</body>
+</html>
