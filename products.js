@@ -280,7 +280,7 @@ function checkout() {
   const total   = cart.reduce(function(s, c) { return s + c.price * c.qty; }, 0);
   const subject = 'Order from Pembe Flour Millers Website';
   const body    = 'Hello,\n\nI would like to place the following order:\n\n' + lines + '\n\nTotal: KSh ' + total.toLocaleString() + '\n\nPlease confirm availability and delivery details.\n\nThank you.';
-  window.location.href = 'mailto:orders@pembeflourmillers.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  window.location.href = 'mailto:orders@pembemillers03@gmail.com.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
 }
 
 function whatsappOrder() {

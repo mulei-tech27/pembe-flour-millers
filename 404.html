@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found - Pembe Flour Millers</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="logo">
+      <img src="images/pembe-logo.png" alt="Pembe Logo" class="logo-img" />
+      <div class="logo-text">
+        <span class="logo-name">Pembe</span>
+        <span class="logo-tagline">Flour Millers</span>
+      </div>
+    </div>
+    <nav class="nav-links" id="nav-links">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="products.html" class="cart-btn">🛒 Shop Now</a>
+  </header>
+
+  <section class="not-found">
+    <div class="not-found-content">
+      <div class="not-found-emoji">🌾</div>
+      <h1>404</h1>
+      <h2>Oops! Page Not Found</h2>
+      <p>Looks like this page got lost in the mill.<br>
+         Let's get you back on track.</p>
+      <a href="index.html" class="btn-primary">Back to Home</a>
+    </div>
+  </section>
+
+  <script>
+    function toggleMenu() {
+      document.getElementById('nav-links').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+  </script>
+  <style>
+  body { animation: pageIn 0.4s ease forwards; }
+  @keyframes pageIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+<!-- Floating WhatsApp button -->
+<a href="https://wa.me/254745319126?text=Hello%20Pembe%20Flour%20Millers!%20I%20would%20like%20to%20inquire%20about%20your%20products." 
+   class="whatsapp-float" 
+   target="_blank" 
+   title="Chat with us on WhatsApp">
+  💬
+</a>
+</body>
+</html>
