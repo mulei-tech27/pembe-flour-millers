@@ -413,3 +413,16 @@ function showToast(message) {
 /* ---- START ---- */
 renderProducts(products);
 applyAnimations();
+/* ---- PRELOAD PRODUCT IMAGES ---- */
+/* This runs silently when the page loads.
+   It tells the browser to download all product
+   images immediately so they are ready instantly
+   when someone opens the cart — no delay! */
+function preloadImages() {
+  products.forEach(function(p) {
+    const img = new Image();
+    img.src = p.image;
+  });
+}
+
+preloadImages();
