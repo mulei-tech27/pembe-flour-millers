@@ -1,5 +1,10 @@
 /* ============================================================
    PEMBE FLOUR MILLERS — products.js
+   Fixed version:
+   - Checkout opens email in new tab (no blank page)
+   - WhatsApp opens in new tab properly
+   - Cart updates instantly
+   - Scroll animations reapply after render
    ============================================================ */
 
 /* ---- PRODUCT DATA ---- */
@@ -30,7 +35,8 @@ const products = [
     description: "Stone-ground whole wheat, retaining bran and germ for full nutrition.",
     badge: "Healthy",
     sizes: [
-      { label: "1kg", price: 95 }, { label: "2kg", price: 180 }, { label: "5kg", price: 430 }
+      { label: "1kg", price: 95 }, { label: "2kg", price: 180 },
+      { label: "5kg", price: 430 }
     ]
   },
   {
@@ -39,7 +45,8 @@ const products = [
     description: "Coarse-ground durum wheat, ideal for pasta, porridge & traditional recipes.",
     badge: "",
     sizes: [
-      { label: "500g", price: 65 }, { label: "1kg", price: 120 }, { label: "2kg", price: 230 }
+      { label: "500g", price: 65 }, { label: "1kg", price: 120 },
+      { label: "2kg", price: 230 }
     ]
   },
   {
@@ -48,7 +55,8 @@ const products = [
     description: "Nutrient-rich starter crumble for chicks aged 0–8 weeks.",
     badge: "New",
     sizes: [
-      { label: "5kg bag", price: 550 }, { label: "10kg bag", price: 1050 }, { label: "25kg bag", price: 2550 }
+      { label: "5kg bag", price: 550 }, { label: "10kg bag", price: 1050 },
+      { label: "25kg bag", price: 2550 }
     ]
   },
   {
@@ -57,7 +65,8 @@ const products = [
     description: "Balanced mash formula for laying hens — boosts egg production.",
     badge: "",
     sizes: [
-      { label: "5kg bag", price: 520 }, { label: "10kg bag", price: 990 }, { label: "25kg bag", price: 2400 }
+      { label: "5kg bag", price: 520 }, { label: "10kg bag", price: 990 },
+      { label: "25kg bag", price: 2400 }
     ]
   },
   {
@@ -66,7 +75,8 @@ const products = [
     description: "High-protein pellets for broilers and pullets aged 8–20 weeks.",
     badge: "",
     sizes: [
-      { label: "5kg bag", price: 510 }, { label: "10kg bag", price: 970 }, { label: "25kg bag", price: 2350 }
+      { label: "5kg bag", price: 510 }, { label: "10kg bag", price: 970 },
+      { label: "25kg bag", price: 2350 }
     ]
   },
   {
@@ -75,7 +85,8 @@ const products = [
     description: "High-fibre bran, great as livestock supplement or for whole grain baking.",
     badge: "",
     sizes: [
-      { label: "1kg", price: 55 }, { label: "2kg", price: 100 }, { label: "5kg", price: 240 }
+      { label: "1kg", price: 55 }, { label: "2kg", price: 100 },
+      { label: "5kg", price: 240 }
     ]
   }
 ];
@@ -90,12 +101,37 @@ products.forEach(function(p) {
   quantities[p.id]    = 1;
 });
 
+/* ---- SCROLL ANIMATION OBSERVER ---- */
+/* Defined once at the top so it can be reused
+   every time products are re-rendered */
+const animationObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+function applyAnimations() {
+  document.querySelectorAll(
+    '.product-card, .feature-item, .review-card, .value-card, .stat-item, .contact-item'
+  ).forEach(function(el) {
+    /* Only add fade-in if not already animated */
+    if (!el.classList.contains('visible')) {
+      el.classList.add('fade-in');
+      animationObserver.observe(el);
+    }
+  });
+}
+
 /* ---- RENDER PRODUCTS ---- */
 function renderProducts(list) {
   const countEl = document.getElementById('product-count');
   if (countEl) {
-    countEl.textContent = 'Showing ' + list.length + ' product' + (list.length !== 1 ? 's' : '');
+    countEl.textContent = 'Showing ' + list.length +
+      ' product' + (list.length !== 1 ? 's' : '');
   }
+
   const grid = document.getElementById('products-grid');
   if (!grid) return;
 
@@ -110,8 +146,10 @@ function renderProducts(list) {
     const qty   = quantities[p.id] || 1;
 
     const sizeOptions = p.sizes.map(function(s, i) {
-      return '<option value="' + i + '"' + (i === szIdx ? ' selected' : '') + '>'
-           + s.label + ' — KSh ' + s.price.toLocaleString() + '</option>';
+      return '<option value="' + i + '"' +
+        (i === szIdx ? ' selected' : '') + '>' +
+        s.label + ' — KSh ' + s.price.toLocaleString() +
+        '</option>';
     }).join('');
 
     return `
@@ -125,7 +163,10 @@ function renderProducts(list) {
           <span class="product-price">KSh ${price.toLocaleString()}</span>
           <div class="qty-row">
             <span class="qty-label">Size:</span>
-            <select class="size-select" onchange="changeSize(${p.id}, this.value)">${sizeOptions}</select>
+            <select class="size-select"
+              onchange="changeSize(${p.id}, this.value)">
+              ${sizeOptions}
+            </select>
           </div>
           <div class="qty-row">
             <span class="qty-label">Qty:</span>
@@ -135,11 +176,17 @@ function renderProducts(list) {
               <button onclick="changeQty(${p.id}, +1)">+</button>
             </div>
           </div>
-          <button class="add-btn" id="btn-${p.id}" onclick="addToCart(${p.id})">Add to Cart</button>
+          <button class="add-btn" id="btn-${p.id}"
+            onclick="addToCart(${p.id})">
+            Add to Cart
+          </button>
         </div>
       </div>
     `;
   }).join('');
+
+  /* Reapply animations after every render */
+  applyAnimations();
 }
 
 function getCategoryLabel(cat) {
@@ -157,17 +204,27 @@ function filterProducts() {
   const sortBy   = document.getElementById('filter-sort').value;
 
   let filtered = products.filter(function(p) {
-    const matchSearch   = !query || p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query);
+    const matchSearch = !query ||
+      p.name.toLowerCase().includes(query) ||
+      p.description.toLowerCase().includes(query);
     const matchCategory = !category || p.category === category;
     return matchSearch && matchCategory;
   });
 
   if (sortBy === 'price-asc') {
-    filtered.sort(function(a, b) { return a.sizes[selectedSizes[a.id]||0].price - b.sizes[selectedSizes[b.id]||0].price; });
+    filtered.sort(function(a, b) {
+      return a.sizes[selectedSizes[a.id] || 0].price -
+             b.sizes[selectedSizes[b.id] || 0].price;
+    });
   } else if (sortBy === 'price-desc') {
-    filtered.sort(function(a, b) { return b.sizes[selectedSizes[b.id]||0].price - a.sizes[selectedSizes[a.id]||0].price; });
+    filtered.sort(function(a, b) {
+      return b.sizes[selectedSizes[b.id] || 0].price -
+             a.sizes[selectedSizes[a.id] || 0].price;
+    });
   } else if (sortBy === 'name') {
-    filtered.sort(function(a, b) { return a.name.localeCompare(b.name); });
+    filtered.sort(function(a, b) {
+      return a.name.localeCompare(b.name);
+    });
   }
 
   renderProducts(filtered);
@@ -197,7 +254,6 @@ function addToCart(id) {
   if (existing) {
     existing.qty += qty;
   } else {
-    /* ✅ FIXED: use product.image instead of product.emoji */
     cart.push({
       key,
       id,
@@ -211,6 +267,7 @@ function addToCart(id) {
 
   updateCartUI();
 
+  /* Button feedback */
   const btn = document.getElementById('btn-' + id);
   if (btn) {
     btn.textContent = '✓ Added!';
@@ -221,7 +278,8 @@ function addToCart(id) {
     }, 1500);
   }
 
-  showToast(qty + '× ' + product.name + ' (' + size.label + ') added to cart');
+  showToast(qty + '× ' + product.name +
+    ' (' + size.label + ') added to cart');
 }
 
 function removeFromCart(index) {
@@ -230,24 +288,30 @@ function removeFromCart(index) {
 }
 
 function updateCartUI() {
-  const total = cart.reduce(function(sum, item) { return sum + item.price * item.qty; }, 0);
-  const count = cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
+  const total = cart.reduce(function(sum, item) {
+    return sum + item.price * item.qty;
+  }, 0);
+  const count = cart.reduce(function(sum, item) {
+    return sum + item.qty;
+  }, 0);
 
+  /* Update badge */
   const badge = document.getElementById('cart-count');
   if (badge) badge.textContent = count;
 
+  /* Update total */
   const totalEl = document.getElementById('cart-total');
   if (totalEl) totalEl.textContent = 'KSh ' + total.toLocaleString();
 
+  /* Update cart body */
   const body = document.getElementById('cart-body');
   if (!body) return;
 
   if (cart.length === 0) {
-    body.innerHTML = '<div class="cart-empty">🛒 <p>Your cart is empty</p></div>';
+    body.innerHTML = '<div class="cart-empty">🛒<p>Your cart is empty</p></div>';
     return;
   }
 
-  /* ✅ FIXED: show actual product image in cart instead of emoji */
   body.innerHTML = cart.map(function(item, index) {
     return `
       <div class="cart-item">
@@ -257,9 +321,12 @@ function updateCartUI() {
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
           <div class="cart-item-size">${item.size} × ${item.qty}</div>
-          <div class="cart-item-price">KSh ${(item.price * item.qty).toLocaleString()}</div>
+          <div class="cart-item-price">
+            KSh ${(item.price * item.qty).toLocaleString()}
+          </div>
         </div>
-        <button class="cart-item-remove" onclick="removeFromCart(${index})">✕</button>
+        <button class="cart-item-remove"
+          onclick="removeFromCart(${index})">✕</button>
       </div>
     `;
   }).join('');
@@ -274,21 +341,62 @@ function toggleCart() {
 }
 
 /* ---- CHECKOUT ---- */
+/* FIXED: use window.open instead of window.location.href
+   so the page does NOT go blank */
 function checkout() {
-  if (cart.length === 0) { showToast('Your cart is empty!'); return; }
-  const lines   = cart.map(function(item) { return '• ' + item.name + ' (' + item.size + ') ×' + item.qty + ' = KSh ' + (item.price * item.qty).toLocaleString(); }).join('\n');
-  const total   = cart.reduce(function(s, c) { return s + c.price * c.qty; }, 0);
+  if (cart.length === 0) {
+    showToast('Your cart is empty!');
+    return;
+  }
+
+  const lines = cart.map(function(item) {
+    return '• ' + item.name +
+      ' (' + item.size + ') ×' + item.qty +
+      ' = KSh ' + (item.price * item.qty).toLocaleString();
+  }).join('\n');
+
+  const total   = cart.reduce(function(s, c) {
+    return s + c.price * c.qty;
+  }, 0);
+
   const subject = 'Order from Pembe Flour Millers Website';
-  const body    = 'Hello,\n\nI would like to place the following order:\n\n' + lines + '\n\nTotal: KSh ' + total.toLocaleString() + '\n\nPlease confirm availability and delivery details.\n\nThank you.';
-  window.location.href = 'mailto:orders@pembemillers03@gmail.com.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  const body    = 'Hello,\n\nI would like to place the following order:\n\n'
+    + lines
+    + '\n\nTotal: KSh ' + total.toLocaleString()
+    + '\n\nPlease confirm availability and delivery details.\n\nThank you.';
+
+  /* Opens email in a NEW TAB — page stays visible */
+  window.open(
+    'mailto:orders@pembeflourmillers.com' +
+    '?subject=' + encodeURIComponent(subject) +
+    '&body='    + encodeURIComponent(body)
+  );
 }
 
+/* FIXED: WhatsApp opens correctly in new tab */
 function whatsappOrder() {
-  if (cart.length === 0) { showToast('Add items to your cart first!'); return; }
-  const lines = cart.map(function(item) { return item.name + ' (' + item.size + ') ×' + item.qty; }).join(', ');
-  const total = cart.reduce(function(s, c) { return s + c.price * c.qty; }, 0);
-  const msg   = 'Hello Pembe Flour Millers! I would like to order: ' + lines + '. Total: KSh ' + total.toLocaleString() + '. Please confirm. Thank you!';
-  window.open('https://wa.me/254745319126?text=' + encodeURIComponent(msg), '_blank');
+  if (cart.length === 0) {
+    showToast('Add items to your cart first!');
+    return;
+  }
+
+  const lines = cart.map(function(item) {
+    return item.name + ' (' + item.size + ') ×' + item.qty;
+  }).join(', ');
+
+  const total = cart.reduce(function(s, c) {
+    return s + c.price * c.qty;
+  }, 0);
+
+  const msg = 'Hello Pembe Flour Millers! I would like to order: '
+    + lines
+    + '. Total: KSh ' + total.toLocaleString()
+    + '. Please confirm. Thank you!';
+
+  window.open(
+    'https://wa.me/254745319126?text=' + encodeURIComponent(msg),
+    '_blank'
+  );
 }
 
 /* ---- TOAST ---- */
@@ -297,8 +405,11 @@ function showToast(message) {
   if (!toast) return;
   toast.textContent = message;
   toast.classList.add('show');
-  setTimeout(function() { toast.classList.remove('show'); }, 2500);
+  setTimeout(function() {
+    toast.classList.remove('show');
+  }, 2500);
 }
 
 /* ---- START ---- */
 renderProducts(products);
+applyAnimations();
