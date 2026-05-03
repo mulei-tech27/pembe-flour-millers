@@ -1,11 +1,9 @@
 /* ============================================================
    PEMBE FLOUR MILLERS — products.js
-   Fixed version:
-   - Checkout opens email in new tab (no blank page)
-   - WhatsApp opens in new tab properly
-   - Cart updates instantly
-   - Scroll animations reapply after render
+   Now connected to Firebase for live stock levels
    ============================================================ */
+
+import { loadStock } from './firebase.js';
 
 /* ---- PRODUCT DATA ---- */
 const products = [
@@ -95,15 +93,24 @@ const products = [
 let selectedSizes = {};
 let quantities    = {};
 let cart          = [];
+let stockData     = {};  /* ← stores stock from Firebase */
 
 products.forEach(function(p) {
   selectedSizes[p.id] = 0;
   quantities[p.id]    = 1;
 });
 
+/* ---- STOCK STATUS HELPER ---- */
+/* Returns the stock status for a product */
+function getStockStatus(productName) {
+  const info = stockData[productName];
+  if (!info) return { status: 'in-stock', label: 'In Stock', stock: 99 };
+  if (info.stock === 0) return { status: 'out-of-stock', label: 'Out of Stock', stock: 0 };
+  if (info.stock <= info.lowStockLimit) return { status: 'low-stock', label: 'Low Stock — ' + info.stock + ' left', stock: info.stock };
+  return { status: 'in-stock', label: 'In Stock', stock: info.stock };
+}
+
 /* ---- SCROLL ANIMATION OBSERVER ---- */
-/* Defined once at the top so it can be reused
-   every time products are re-rendered */
 const animationObserver = new IntersectionObserver(function(entries) {
   entries.forEach(function(entry) {
     if (entry.isIntersecting) {
@@ -116,7 +123,6 @@ function applyAnimations() {
   document.querySelectorAll(
     '.product-card, .feature-item, .review-card, .value-card, .stat-item, .contact-item'
   ).forEach(function(el) {
-    /* Only add fade-in if not already animated */
     if (!el.classList.contains('visible')) {
       el.classList.add('fade-in');
       animationObserver.observe(el);
@@ -136,14 +142,15 @@ function renderProducts(list) {
   if (!grid) return;
 
   if (list.length === 0) {
-    grid.innerHTML = '<p style="color:#7A6A50;padding:20px;">No products found. Try a different search.</p>';
+    grid.innerHTML = '<p style="color:#7A6A50;padding:20px;">No products found.</p>';
     return;
   }
 
   grid.innerHTML = list.map(function(p) {
-    const szIdx = selectedSizes[p.id] || 0;
-    const price = p.sizes[szIdx].price;
-    const qty   = quantities[p.id] || 1;
+    const szIdx  = selectedSizes[p.id] || 0;
+    const price  = p.sizes[szIdx].price;
+    const qty    = quantities[p.id] || 1;
+    const stock  = getStockStatus(p.name);
 
     const sizeOptions = p.sizes.map(function(s, i) {
       return '<option value="' + i + '"' +
@@ -151,6 +158,17 @@ function renderProducts(list) {
         s.label + ' — KSh ' + s.price.toLocaleString() +
         '</option>';
     }).join('');
+
+    /* Stock badge color */
+    const badgeColor =
+      stock.status === 'out-of-stock' ? '#e24b4a' :
+      stock.status === 'low-stock'    ? '#D4A017' : '#3B6D11';
+
+    /* Disable button if out of stock */
+    const btnDisabled = stock.status === 'out-of-stock' ?
+      'disabled style="opacity:0.5;cursor:not-allowed;"' : '';
+    const btnText = stock.status === 'out-of-stock' ?
+      'Out of Stock' : 'Add to Cart';
 
     return `
       <div class="product-card" id="card-${p.id}">
@@ -160,32 +178,48 @@ function renderProducts(list) {
           <span class="product-category">${getCategoryLabel(p.category)}</span>
           <h3>${p.name}</h3>
           <p>${p.description}</p>
+
+          <!-- Stock status badge -->
+          <span style="
+            display:inline-block;
+            font-size:11px;
+            font-weight:700;
+            padding:3px 10px;
+            border-radius:20px;
+            margin-bottom:10px;
+            background:${badgeColor}22;
+            color:${badgeColor};
+            border:1px solid ${badgeColor}44;
+          ">${stock.label}</span>
+
           <span class="product-price">KSh ${price.toLocaleString()}</span>
           <div class="qty-row">
             <span class="qty-label">Size:</span>
             <select class="size-select"
-              onchange="changeSize(${p.id}, this.value)">
+              onchange="changeSize(${p.id}, this.value)"
+              ${stock.status === 'out-of-stock' ? 'disabled' : ''}>
               ${sizeOptions}
             </select>
           </div>
           <div class="qty-row">
             <span class="qty-label">Qty:</span>
             <div class="qty-ctrl">
-              <button onclick="changeQty(${p.id}, -1)">−</button>
+              <button onclick="changeQty(${p.id}, -1)"
+                ${stock.status === 'out-of-stock' ? 'disabled' : ''}>−</button>
               <span id="qty-${p.id}">${qty}</span>
-              <button onclick="changeQty(${p.id}, +1)">+</button>
+              <button onclick="changeQty(${p.id}, +1)"
+                ${stock.status === 'out-of-stock' ? 'disabled' : ''}>+</button>
             </div>
           </div>
           <button class="add-btn" id="btn-${p.id}"
-            onclick="addToCart(${p.id})">
-            Add to Cart
+            onclick="addToCart(${p.id})" ${btnDisabled}>
+            ${btnText}
           </button>
         </div>
       </div>
     `;
   }).join('');
 
-  /* Reapply animations after every render */
   applyAnimations();
 }
 
@@ -213,18 +247,16 @@ function filterProducts() {
 
   if (sortBy === 'price-asc') {
     filtered.sort(function(a, b) {
-      return a.sizes[selectedSizes[a.id] || 0].price -
-             b.sizes[selectedSizes[b.id] || 0].price;
+      return a.sizes[selectedSizes[a.id]||0].price -
+             b.sizes[selectedSizes[b.id]||0].price;
     });
   } else if (sortBy === 'price-desc') {
     filtered.sort(function(a, b) {
-      return b.sizes[selectedSizes[b.id] || 0].price -
-             a.sizes[selectedSizes[a.id] || 0].price;
+      return b.sizes[selectedSizes[b.id]||0].price -
+             a.sizes[selectedSizes[a.id]||0].price;
     });
   } else if (sortBy === 'name') {
-    filtered.sort(function(a, b) {
-      return a.name.localeCompare(b.name);
-    });
+    filtered.sort(function(a, b) { return a.name.localeCompare(b.name); });
   }
 
   renderProducts(filtered);
@@ -245,18 +277,23 @@ function changeQty(id, delta) {
 /* ---- CART ---- */
 function addToCart(id) {
   const product = products.find(function(p) { return p.id === id; });
-  const szIdx   = selectedSizes[id] || 0;
-  const size    = product.sizes[szIdx];
-  const qty     = quantities[id] || 1;
-  const key     = id + '-' + szIdx;
+  const stock   = getStockStatus(product.name);
+  if (stock.status === 'out-of-stock') {
+    showToast('Sorry — this product is out of stock!');
+    return;
+  }
+
+  const szIdx = selectedSizes[id] || 0;
+  const size  = product.sizes[szIdx];
+  const qty   = quantities[id] || 1;
+  const key   = id + '-' + szIdx;
 
   const existing = cart.find(function(c) { return c.key === key; });
   if (existing) {
     existing.qty += qty;
   } else {
     cart.push({
-      key,
-      id,
+      key, id,
       name:  product.name,
       image: product.image,
       size:  size.label,
@@ -267,7 +304,6 @@ function addToCart(id) {
 
   updateCartUI();
 
-  /* Button feedback */
   const btn = document.getElementById('btn-' + id);
   if (btn) {
     btn.textContent = '✓ Added!';
@@ -278,8 +314,7 @@ function addToCart(id) {
     }, 1500);
   }
 
-  showToast(qty + '× ' + product.name +
-    ' (' + size.label + ') added to cart');
+  showToast(qty + '× ' + product.name + ' (' + size.label + ') added!');
 }
 
 function removeFromCart(index) {
@@ -295,15 +330,12 @@ function updateCartUI() {
     return sum + item.qty;
   }, 0);
 
-  /* Update badge */
   const badge = document.getElementById('cart-count');
   if (badge) badge.textContent = count;
 
-  /* Update total */
   const totalEl = document.getElementById('cart-total');
   if (totalEl) totalEl.textContent = 'KSh ' + total.toLocaleString();
 
-  /* Update cart body */
   const body = document.getElementById('cart-body');
   if (!body) return;
 
@@ -341,31 +373,17 @@ function toggleCart() {
 }
 
 /* ---- CHECKOUT ---- */
-/* FIXED: use window.open instead of window.location.href
-   so the page does NOT go blank */
 function checkout() {
-  if (cart.length === 0) {
-    showToast('Your cart is empty!');
-    return;
-  }
-
+  if (cart.length === 0) { showToast('Your cart is empty!'); return; }
   const lines = cart.map(function(item) {
-    return '• ' + item.name +
-      ' (' + item.size + ') ×' + item.qty +
+    return '• ' + item.name + ' (' + item.size + ') ×' + item.qty +
       ' = KSh ' + (item.price * item.qty).toLocaleString();
   }).join('\n');
-
-  const total   = cart.reduce(function(s, c) {
-    return s + c.price * c.qty;
-  }, 0);
-
+  const total   = cart.reduce(function(s, c) { return s + c.price * c.qty; }, 0);
   const subject = 'Order from Pembe Flour Millers Website';
   const body    = 'Hello,\n\nI would like to place the following order:\n\n'
-    + lines
-    + '\n\nTotal: KSh ' + total.toLocaleString()
+    + lines + '\n\nTotal: KSh ' + total.toLocaleString()
     + '\n\nPlease confirm availability and delivery details.\n\nThank you.';
-
-  /* Opens email in a NEW TAB — page stays visible */
   window.open(
     'mailto:orders@pembeflourmillers.com' +
     '?subject=' + encodeURIComponent(subject) +
@@ -373,26 +391,15 @@ function checkout() {
   );
 }
 
-/* FIXED: WhatsApp opens correctly in new tab */
 function whatsappOrder() {
-  if (cart.length === 0) {
-    showToast('Add items to your cart first!');
-    return;
-  }
-
+  if (cart.length === 0) { showToast('Add items to your cart first!'); return; }
   const lines = cart.map(function(item) {
     return item.name + ' (' + item.size + ') ×' + item.qty;
   }).join(', ');
-
-  const total = cart.reduce(function(s, c) {
-    return s + c.price * c.qty;
-  }, 0);
-
-  const msg = 'Hello Pembe Flour Millers! I would like to order: '
-    + lines
-    + '. Total: KSh ' + total.toLocaleString()
+  const total = cart.reduce(function(s, c) { return s + c.price * c.qty; }, 0);
+  const msg   = 'Hello Pembe Flour Millers! I would like to order: '
+    + lines + '. Total: KSh ' + total.toLocaleString()
     + '. Please confirm. Thank you!';
-
   window.open(
     'https://wa.me/254745319126?text=' + encodeURIComponent(msg),
     '_blank'
@@ -405,19 +412,10 @@ function showToast(message) {
   if (!toast) return;
   toast.textContent = message;
   toast.classList.add('show');
-  setTimeout(function() {
-    toast.classList.remove('show');
-  }, 2500);
+  setTimeout(function() { toast.classList.remove('show'); }, 2500);
 }
 
-/* ---- START ---- */
-renderProducts(products);
-applyAnimations();
-/* ---- PRELOAD PRODUCT IMAGES ---- */
-/* This runs silently when the page loads.
-   It tells the browser to download all product
-   images immediately so they are ready instantly
-   when someone opens the cart — no delay! */
+/* ---- PRELOAD IMAGES ---- */
 function preloadImages() {
   products.forEach(function(p) {
     const img = new Image();
@@ -425,4 +423,33 @@ function preloadImages() {
   });
 }
 
-preloadImages();
+/* ---- MAKE FUNCTIONS GLOBAL ---- */
+/* Needed because we are using type="module" */
+window.filterProducts  = filterProducts;
+window.changeSize      = changeSize;
+window.changeQty       = changeQty;
+window.addToCart       = addToCart;
+window.removeFromCart  = removeFromCart;
+window.toggleCart      = toggleCart;
+window.checkout        = checkout;
+window.whatsappOrder   = whatsappOrder;
+
+/* ---- START ---- */
+/* Load stock from Firebase first, then render products */
+async function init() {
+  /* Show loading message while fetching stock */
+  const grid = document.getElementById('products-grid');
+  if (grid) {
+    grid.innerHTML = '<p style="color:#7A6A50;padding:20px;">Loading products...</p>';
+  }
+
+  /* Fetch stock from Firebase */
+  stockData = await loadStock();
+
+  /* Now render products with stock info */
+  renderProducts(products);
+  preloadImages();
+  applyAnimations();
+}
+
+init();
