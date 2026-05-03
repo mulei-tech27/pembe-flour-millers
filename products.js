@@ -288,11 +288,13 @@ function changeQty(id, delta) {
   }
 }
 
-/* ---- CART ---- */
 function addToCart(id) {
   const product = products.find(function(p) { return p.id === id; });
   const stock   = getStockStatus(product.name);
   const qty     = quantities[id] || 1;
+  const szIdx   = selectedSizes[id] || 0;
+  const size    = product.sizes[szIdx];
+  const key     = id + '-' + szIdx;
 
   /* Block if out of stock */
   if (stock.status === 'out-of-stock') {
@@ -300,12 +302,19 @@ function addToCart(id) {
     return;
   }
 
-  const szIdx = selectedSizes[id] || 0;
-  const size  = product.sizes[szIdx];
-  const qty   = quantities[id] || 1;
-  const key   = id + '-' + szIdx;
+  /* Check total in cart vs available stock */
+  const existing      = cart.find(function(c) { return c.key === key; });
+  const alreadyInCart = existing ? existing.qty : 0;
 
-  const existing = cart.find(function(c) { return c.key === key; });
+  if (alreadyInCart + qty > stock.stock) {
+    showToast(
+      'Only ' + stock.stock + ' units available. ' +
+      'You already have ' + alreadyInCart + ' in your cart.'
+    );
+    return;
+  }
+
+  /* Add to cart */
   if (existing) {
     existing.qty += qty;
   } else {
@@ -321,6 +330,7 @@ function addToCart(id) {
 
   updateCartUI();
 
+  /* Button feedback */
   const btn = document.getElementById('btn-' + id);
   if (btn) {
     btn.textContent = '✓ Added!';
