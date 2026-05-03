@@ -269,15 +269,32 @@ function changeSize(id, value) {
 }
 
 function changeQty(id, delta) {
-  quantities[id] = Math.max(1, (quantities[id] || 1) + delta);
+  const product   = products.find(function(p) { return p.id === id; });
+  const stockInfo = getStockStatus(product.name);
+  const maxQty    = stockInfo.stock || 99;
+
+  /* Never go below 1 or above available stock */
+  quantities[id] = Math.min(
+    maxQty,
+    Math.max(1, (quantities[id] || 1) + delta)
+  );
+
   const el = document.getElementById('qty-' + id);
   if (el) el.textContent = quantities[id];
+
+  /* Warn the customer if they hit the limit */
+  if (quantities[id] >= maxQty && delta > 0) {
+    showToast('Maximum available stock is ' + maxQty + ' units');
+  }
 }
 
 /* ---- CART ---- */
 function addToCart(id) {
   const product = products.find(function(p) { return p.id === id; });
   const stock   = getStockStatus(product.name);
+  const qty     = quantities[id] || 1;
+
+  /* Block if out of stock */
   if (stock.status === 'out-of-stock') {
     showToast('Sorry — this product is out of stock!');
     return;
