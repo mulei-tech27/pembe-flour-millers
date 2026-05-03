@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="images/favicon.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard — Pembe Flour Millers</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="site-header">
+    <div class="logo">
+      <img src="images/pembe-logo.png" alt="Pembe Logo" class="logo-img" />
+      <div class="logo-text">
+        <span class="logo-name">Pembe</span>
+        <span class="logo-tagline">Flour Millers</span>
+      </div>
+    </div>
+    <nav class="nav-links" id="nav-links">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html">Login</a>
+    </nav>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="products.html" class="cart-btn">🛒 Shop Now</a>
+  </header>
+
+  <!-- ===== PAGE HERO ===== -->
+  <section class="page-hero">
+    <h1 id="welcome-title">My Dashboard</h1>
+    <p id="welcome-sub">Loading your account...</p>
+  </section>
+
+  <!-- ===== DASHBOARD CONTENT ===== -->
+  <section class="section dashboard-section">
+
+    <!-- Profile Card -->
+    <div class="dashboard-grid">
+
+      <div class="dash-card profile-card">
+        <div class="profile-avatar" id="profile-avatar">?</div>
+        <div class="profile-info">
+          <h3 id="profile-name">Loading...</h3>
+          <p id="profile-email">Loading...</p>
+          <p id="profile-phone">Loading...</p>
+          <span class="member-badge" id="member-badge">Regular Member</span>
+        </div>
+      </div>
+
+      <!-- Points Card -->
+      <div class="dash-card points-card">
+        <div class="points-icon">⭐</div>
+        <div class="points-info">
+          <span class="points-number" id="points-number">0</span>
+          <span class="points-label">Loyalty Points</span>
+          <p class="points-hint">Earn points with every order!</p>
+        </div>
+      </div>
+
+      <!-- Pembe Family Card -->
+      <div class="dash-card family-card" id="family-card">
+        <div class="family-icon">🌾</div>
+        <div class="family-info">
+          <h3>Pembe Family</h3>
+          <p id="family-status-text">
+            Join our exclusive membership for special discounts and early access to sales!
+          </p>
+          <button class="btn-primary" id="family-btn" onclick="handleFamilyAction()">
+            Apply Now →
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Actions Card -->
+      <div class="dash-card actions-card">
+        <h3>Quick Actions</h3>
+        <div class="action-links">
+          <a href="products.html" class="action-link">
+            🛒 <span>Shop Products</span>
+          </a>
+          <a href="contact.html" class="action-link">
+            📞 <span>Contact Us</span>
+          </a>
+          <a href="pembe-family.html" class="action-link">
+            🌾 <span>Pembe Family</span>
+          </a>
+          <a onclick="handleLogout()" class="action-link logout-link">
+            🚪 <span>Logout</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Member Benefits Section -->
+    <div class="benefits-section" id="benefits-section" style="display:none">
+      <h2 class="section-title">🌾 Your Pembe Family Benefits</h2>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <span>💰</span>
+          <h4>5% Discount</h4>
+          <p>On all orders as a Pembe Family member</p>
+        </div>
+        <div class="benefit-card">
+          <span>🔔</span>
+          <h4>Early Sale Access</h4>
+          <p>Know about sales before the general public</p>
+        </div>
+        <div class="benefit-card">
+          <span>⭐</span>
+          <h4>Double Points</h4>
+          <p>Earn 2x loyalty points on every purchase</p>
+        </div>
+        <div class="benefit-card">
+          <span>🚚</span>
+          <h4>Priority Delivery</h4>
+          <p>Your orders are processed first</p>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="footer-col">
+      <strong class="footer-logo">Pembe Flour Millers</strong>
+      <p>Quality you can taste.<br>Nairobi, Kenya.</p>
+    </div>
+    <div class="footer-col">
+      <strong>Quick Links</strong>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <strong>Contact Us</strong>
+      <p>📞 +254 745 319 126</p>
+      <p>✉️ orders@pembeflourmillers.com</p>
+      <p>📍 Nairobi City, Kenya</p>
+    </div>
+  </footer>
+  <div class="footer-copy">© 2026 Pembe Flour Millers. All Rights Reserved.</div>
+
+  <button class="back-to-top" id="backToTop"
+    onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script type="module">
+    import {
+      auth, onAuthStateChanged,
+      getCustomerProfile, applyPembeFamily, logoutUser
+    } from './firebase.js';
+
+    let currentUser   = null;
+    let customerData  = null;
+
+    /* Check login status */
+    onAuthStateChanged(auth, async function(user) {
+      if (!user) {
+        /* Not logged in — redirect to login */
+        window.location.href = 'login.html';
+        return;
+      }
+
+      currentUser = user;
+
+      /* Load profile from Firestore */
+      const result = await getCustomerProfile(user.uid);
+      if (result.success) {
+        customerData = result.data;
+        displayProfile(customerData);
+      }
+    });
+
+    /* Display profile info */
+    function displayProfile(data) {
+      /* Welcome message */
+      const firstName = data.fullName.split(' ')[0];
+      document.getElementById('welcome-title').textContent =
+        'Welcome, ' + firstName + '! 👋';
+      document.getElementById('welcome-sub').textContent =
+        'Manage your Pembe account';
+
+      /* Profile card */
+      document.getElementById('profile-avatar').textContent =
+        data.fullName.charAt(0).toUpperCase();
+      document.getElementById('profile-name').textContent  = data.fullName;
+      document.getElementById('profile-email').textContent = data.email;
+      document.getElementById('profile-phone').textContent = data.phone;
+
+      /* Points */
+      document.getElementById('points-number').textContent = data.points || 0;
+
+      /* Member badge */
+      const badge = document.getElementById('member-badge');
+      if (data.pembeFamily) {
+        badge.textContent         = '🌾 Pembe Family Member';
+        badge.style.background    = 'var(--gold)';
+        badge.style.color         = 'var(--text)';
+
+        /* Update family card */
+        document.getElementById('family-status-text').textContent =
+          'You are a proud Pembe Family member! Enjoy your exclusive benefits.';
+        document.getElementById('family-btn').textContent = '✓ Member';
+        document.getElementById('family-btn').disabled   = true;
+        document.getElementById('family-btn').style.opacity = '0.7';
+
+        /* Show benefits */
+        document.getElementById('benefits-section').style.display = 'block';
+      } else {
+        badge.textContent = 'Regular Member';
+      }
+    }
+
+    /* Apply for Pembe Family */
+    window.handleFamilyAction = async function() {
+      if (!currentUser) return;
+      if (customerData && customerData.pembeFamily) return;
+
+      const btn = document.getElementById('family-btn');
+      btn.textContent = 'Applying...';
+      btn.disabled    = true;
+
+      const result = await applyPembeFamily(currentUser.uid);
+
+      if (result.success) {
+        customerData.pembeFamily  = true;
+        customerData.memberStatus = 'pembe-family';
+        displayProfile(customerData);
+        alert('🎉 Welcome to the Pembe Family! You now enjoy exclusive benefits.');
+      } else {
+        btn.textContent = 'Apply Now →';
+        btn.disabled    = false;
+        alert('Something went wrong. Please try again.');
+      }
+    };
+
+    /* Logout */
+    window.handleLogout = async function() {
+      await logoutUser();
+      window.location.href = 'index.html';
+    };
+
+    /* Hamburger */
+    window.toggleMenu = function() {
+      document.getElementById('nav-links').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    };
+
+    /* Back to top */
+    window.addEventListener('scroll', function() {
+      const btn = document.getElementById('backToTop');
+      if (btn) btn.classList.toggle('visible', window.scrollY > 400);
+    });
+  </script>
+
+</body>
+</html>

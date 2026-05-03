@@ -818,3 +818,193 @@ textarea { resize: vertical; }
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+/* ---- AUTH PAGES ---- */
+.auth-section {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 40px 2rem;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 12px;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: background-color 0.2s, color 0.2s;
+  font-family: inherit;
+}
+
+.auth-tab.active {
+  background-color: var(--text);
+  color: var(--gold-light);
+}
+
+.auth-card {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+}
+
+.auth-card h2 {
+  font-size: 22px;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.auth-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.auth-link {
+  color: var(--green-mid);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.auth-error {
+  font-size: 13px;
+  color: #e24b4a;
+  margin-bottom: 12px;
+  min-height: 18px;
+  font-weight: 500;
+}
+/* ---- DASHBOARD ---- */
+.dashboard-section { padding: 40px 2rem; max-width: 1100px; margin: 0 auto; }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.dash-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.dash-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--gold);
+}
+
+/* Profile card */
+.profile-card { display: flex; align-items: center; gap: 16px; }
+
+.profile-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--gold);
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-info h3 { font-size: 16px; margin-bottom: 4px; }
+.profile-info p  { font-size: 13px; color: var(--text-muted); margin-bottom: 2px; }
+
+.member-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--green-light);
+  color: var(--green);
+  margin-top: 6px;
+}
+
+/* Points card */
+.points-card { display: flex; align-items: center; gap: 16px; }
+.points-icon { font-size: 40px; }
+.points-number {
+  display: block;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+.points-label { font-size: 13px; font-weight: 600; color: var(--text); }
+.points-hint  { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* Family card */
+.family-card { display: flex; gap: 16px; align-items: flex-start; }
+.family-icon { font-size: 36px; }
+.family-info h3 { font-size: 16px; margin-bottom: 6px; }
+.family-info p  { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+
+/* Actions card */
+.actions-card h3 { font-size: 16px; margin-bottom: 16px; }
+.action-links { display: flex; flex-direction: column; gap: 8px; }
+
+.action-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--warm-gray);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-decoration: none;
+}
+
+.action-link:hover { background-color: var(--border); }
+.logout-link { color: #e24b4a; }
+.logout-link:hover { background-color: #fdf0f0; }
+
+/* Benefits section */
+.benefits-section { margin-top: 20px; }
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.benefit-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.benefit-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--gold);
+}
+
+.benefit-card span { font-size: 32px; display: block; margin-bottom: 10px; }
+.benefit-card h4   { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.benefit-card p    { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
