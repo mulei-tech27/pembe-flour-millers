@@ -33,16 +33,15 @@
 
   <!-- ===== PAGE HERO ===== -->
   <section class="page-hero">
-    <h1 id="welcome-title">My Dashboard</h1>
-    <p id="welcome-sub">Loading your account...</p>
+    <h1 id="welcome-title">Loading...</h1>
+    <p id="welcome-sub">Please wait a moment</p>
   </section>
 
   <!-- ===== DASHBOARD CONTENT ===== -->
   <section class="section dashboard-section">
-
-    <!-- Profile Card -->
     <div class="dashboard-grid">
 
+      <!-- Profile Card -->
       <div class="dash-card profile-card">
         <div class="profile-avatar" id="profile-avatar">?</div>
         <div class="profile-info">
@@ -98,7 +97,7 @@
 
     </div>
 
-    <!-- Member Benefits Section -->
+    <!-- Member Benefits — only shown to Pembe Family members -->
     <div class="benefits-section" id="benefits-section" style="display:none">
       <h2 class="section-title">🌾 Your Pembe Family Benefits</h2>
       <div class="benefits-grid">
@@ -153,148 +152,202 @@
     onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
   <script type="module">
-    import {
-      auth, onAuthStateChanged,
-      getCustomerProfile, applyPembeFamily, logoutUser
-    } from './firebase.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    let currentUser   = null;
-    let customerData  = null;
+    /* ---- Firebase config directly in dashboard
+       This avoids any import issues with firebase.js ---- */
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyfhj8WIf1V9syxpLCEpgbW1jQBFQ3RVE",
+      authDomain: "pembe-flour-millers.firebaseapp.com",
+      projectId: "pembe-flour-millers",
+      storageBucket: "pembe-flour-millers.firebasestorage.app",
+      messagingSenderId: "776266354891",
+      appId: "1:776266354891:web:a6ba0359c42331a0370b4e"
+    };
 
-   /* Show loading state while Firebase initializes */
-document.getElementById('welcome-title').textContent = 'Loading...';
-document.getElementById('welcome-sub').textContent   = 'Please wait a moment';
+    const app  = initializeApp(firebaseConfig);
+    const db   = getFirestore(app);
+    const auth = getAuth(app);
 
-onAuthStateChanged(auth, async function(user) {
-  if (!user) {
-    window.location.href = 'login.html';
-    return;
-  }
+    let currentUser  = null;
+    let customerData = null;
 
-  currentUser = user;
+    /* ---- Save pending profile from localStorage ---- */
+    async function savePendingProfile(user) {
+      try {
+        const pending = localStorage.getItem('pending_profile');
+        if (!pending) return null;
 
-  /* Try loading profile up to 3 times */
-  let attempts = 0;
-  let result   = { success: false };
+        const profile = JSON.parse(pending);
+        if (profile.uid !== user.uid) return null;
 
-  while (!result.success && attempts < 3) {
-    attempts++;
-    result = await getCustomerProfile(user.uid);
+        const profileData = {
+          fullName:     profile.fullName,
+          email:        profile.email,
+          phone:        profile.phone,
+          memberStatus: 'regular',
+          points:       0,
+          joinedDate:   new Date().toISOString(),
+          pembeFamily:  false
+        };
 
-    /* Wait 1 second between attempts */
-    if (!result.success && attempts < 3) {
-      await new Promise(function(resolve) {
-        setTimeout(resolve, 1000);
-      });
+        await setDoc(doc(db, 'customers', user.uid), profileData);
+        localStorage.removeItem('pending_profile');
+        console.log('✅ Profile saved to Firestore!');
+        return profileData;
+
+      } catch (error) {
+        console.error('Error saving profile:', error);
+        return null;
+      }
     }
-  }
 
-  if (result.success) {
-    customerData = result.data;
-    displayProfile(customerData);
-  } else {
-    /* Profile not found — create a basic display
-       using the auth email as fallback */
-    document.getElementById('welcome-title').textContent = 'Welcome! 👋';
-    document.getElementById('welcome-sub').textContent   = 'Your account is ready';
-    document.getElementById('profile-avatar').textContent =
-      user.email.charAt(0).toUpperCase();
-    document.getElementById('profile-name').textContent  = user.displayName || 'Member';
-    document.getElementById('profile-email').textContent = user.email;
-    document.getElementById('profile-phone').textContent = 'Not set';
-    document.getElementById('points-number').textContent = '0';
-  }
-});
+    /* ---- Load profile from Firestore ---- */
+    async function loadProfile(uid) {
+      try {
+        const docSnap = await getDoc(doc(db, 'customers', uid));
+        if (docSnap.exists()) {
+          return docSnap.data();
+        }
+        return null;
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        return null;
+      }
+    }
 
-    /* Display profile info */
+    /* ---- Display profile on page ---- */
     function displayProfile(data) {
-      /* Welcome message */
-      const firstName = data.fullName.split(' ')[0];
+      const firstName = data.fullName
+        ? data.fullName.split(' ')[0]
+        : 'Member';
+
       document.getElementById('welcome-title').textContent =
         'Welcome, ' + firstName + '! 👋';
       document.getElementById('welcome-sub').textContent =
         'Manage your Pembe account';
-
-      /* Profile card */
       document.getElementById('profile-avatar').textContent =
-        data.fullName.charAt(0).toUpperCase();
-      document.getElementById('profile-name').textContent  = data.fullName;
-      document.getElementById('profile-email').textContent = data.email;
-      document.getElementById('profile-phone').textContent = data.phone;
-
-      /* Points */
-      document.getElementById('points-number').textContent = data.points || 0;
+        data.fullName ? data.fullName.charAt(0).toUpperCase() : 'M';
+      document.getElementById('profile-name').textContent  =
+        data.fullName  || 'Member';
+      document.getElementById('profile-email').textContent =
+        data.email     || '';
+      document.getElementById('profile-phone').textContent =
+        data.phone     || 'Not set';
+      document.getElementById('points-number').textContent =
+        data.points    || 0;
 
       /* Member badge */
       const badge = document.getElementById('member-badge');
       if (data.pembeFamily) {
-        badge.textContent         = '🌾 Pembe Family Member';
-        badge.style.background    = 'var(--gold)';
-        badge.style.color         = 'var(--text)';
+        badge.textContent      = '🌾 Pembe Family Member';
+        badge.style.background = 'var(--gold)';
+        badge.style.color      = 'var(--text)';
 
-        /* Update family card */
         document.getElementById('family-status-text').textContent =
           'You are a proud Pembe Family member! Enjoy your exclusive benefits.';
-        document.getElementById('family-btn').textContent = '✓ Member';
-        document.getElementById('family-btn').disabled   = true;
-        document.getElementById('family-btn').style.opacity = '0.7';
 
-        /* Show benefits */
+        const familyBtn = document.getElementById('family-btn');
+        familyBtn.textContent   = '✓ Member';
+        familyBtn.disabled      = true;
+        familyBtn.style.opacity = '0.7';
+
         document.getElementById('benefits-section').style.display = 'block';
       } else {
         badge.textContent = 'Regular Member';
       }
     }
 
+    /* ---- Auth state listener ---- */
+    onAuthStateChanged(auth, async function(user) {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      currentUser = user;
+
+      /* First check if there is a pending profile to save */
+      const savedProfile = await savePendingProfile(user);
+
+      if (savedProfile) {
+        customerData = savedProfile;
+        displayProfile(customerData);
+        return;
+      }
+
+      /* Otherwise load existing profile */
+      const profile = await loadProfile(user.uid);
+
+      if (profile) {
+        customerData = profile;
+        displayProfile(customerData);
+      } else {
+        /* No profile found — show basic info */
+        document.getElementById('welcome-title').textContent = 'Welcome! 👋';
+        document.getElementById('welcome-sub').textContent   = 'Your account is ready';
+        document.getElementById('profile-avatar').textContent =
+          user.email.charAt(0).toUpperCase();
+        document.getElementById('profile-name').textContent  = 'Member';
+        document.getElementById('profile-email').textContent = user.email;
+        document.getElementById('profile-phone').textContent = 'Not set';
+        document.getElementById('points-number').textContent = '0';
+      }
+    });
+
+    /* ---- Apply for Pembe Family ---- */
     window.handleFamilyAction = async function() {
-  if (!currentUser) {
-    window.location.href = 'login.html';
-    return;
-  }
-  if (customerData && customerData.pembeFamily) return;
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+      }
+      if (customerData && customerData.pembeFamily) return;
 
-  const btn = document.getElementById('family-btn');
-  btn.textContent = 'Applying...';
-  btn.disabled    = true;
+      const btn = document.getElementById('family-btn');
+      btn.textContent = 'Applying...';
+      btn.disabled    = true;
 
-  /* Try applying up to 3 times */
-  let success = false;
-  let attempts = 0;
+      try {
+        await updateDoc(doc(db, 'customers', currentUser.uid), {
+          pembeFamily:  true,
+          memberStatus: 'pembe-family',
+          memberSince:  new Date().toISOString()
+        });
 
-  while (!success && attempts < 3) {
-    attempts++;
-    const result = await applyPembeFamily(currentUser.uid);
-    if (result.success) {
-      success = true;
-    } else {
-      console.log('Attempt ' + attempts + ' failed:', result.error);
-      await new Promise(function(r) { setTimeout(r, 1000); });
-    }
-  }
+        if (customerData) customerData.pembeFamily = true;
+        displayProfile(customerData || {
+          pembeFamily: true,
+          fullName:    'Member',
+          email:       currentUser.email,
+          phone:       'Not set',
+          points:      0
+        });
 
-  if (success) {
-    if (customerData) customerData.pembeFamily = true;
-    displayProfile(customerData || { pembeFamily: true, fullName: 'Member', email: currentUser.email, phone: 'Not set', points: 0 });
-    alert('🎉 Welcome to the Pembe Family! You now enjoy exclusive benefits.');
-  } else {
-    btn.textContent = 'Apply Now →';
-    btn.disabled    = false;
-    alert('Could not apply right now. Please try again in a moment.');
-  }
-};
-    /* Logout */
+        alert('🎉 Welcome to the Pembe Family! You now enjoy exclusive benefits.');
+
+      } catch (error) {
+        console.error('Error applying:', error);
+        btn.textContent = 'Apply Now →';
+        btn.disabled    = false;
+        alert('Could not apply right now. Please try again.');
+      }
+    };
+
+    /* ---- Logout ---- */
     window.handleLogout = async function() {
-      await logoutUser();
+      await signOut(auth);
       window.location.href = 'index.html';
     };
 
-    /* Hamburger */
+    /* ---- Hamburger ---- */
     window.toggleMenu = function() {
       document.getElementById('nav-links').classList.toggle('open');
       document.getElementById('hamburger').classList.toggle('open');
     };
 
-    /* Back to top */
+    /* ---- Back to top ---- */
     window.addEventListener('scroll', function() {
       const btn = document.getElementById('backToTop');
       if (btn) btn.classList.toggle('visible', window.scrollY > 400);

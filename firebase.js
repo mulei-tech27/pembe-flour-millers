@@ -1,6 +1,5 @@
 /* ============================================================
    PEMBE FLOUR MILLERS — firebase.js
-   Handles database AND authentication
    ============================================================ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -51,42 +50,44 @@ async function updateStock(docId, newStock) {
   }
 }
 
-/* ---- AUTH FUNCTIONS ---- */
-
-/* Register a new customer */
 async function registerUser(email, password, fullName, phone) {
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    /* Create auth account */
+    const userCredential = await createUserWithEmailAndPassword(
+      auth, email, password
+    );
     const user = userCredential.user;
 
-    /* Save extra customer info to Firestore */
-    await setDoc(doc(db, 'customers', user.uid), {
-      fullName:     fullName,
-      email:        email,
-      phone:        phone,
-      memberStatus: 'regular',
-      points:       0,
-      joinedDate:   new Date().toISOString(),
-      pembeFamily:  false
-    });
+    /* Store name and phone in localStorage temporarily
+       They will be saved to Firestore on first dashboard load */
+    localStorage.setItem('pending_profile', JSON.stringify({
+      fullName: fullName,
+      phone:    phone,
+      email:    email,
+      uid:      user.uid
+    }));
 
     return { success: true, user };
+
   } catch (error) {
+    console.error('Registration error:', error);
     return { success: false, error: error.message };
   }
 }
 
-/* Login existing customer */
+/* ---- LOGIN ---- */
 async function loginUser(email, password) {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(
+      auth, email, password
+    );
     return { success: true, user: userCredential.user };
   } catch (error) {
     return { success: false, error: error.message };
   }
 }
 
-/* Logout */
+/* ---- LOGOUT ---- */
 async function logoutUser() {
   try {
     await signOut(auth);
@@ -96,7 +97,7 @@ async function logoutUser() {
   }
 }
 
-/* Get customer profile from Firestore */
+/* ---- GET PROFILE ---- */
 async function getCustomerProfile(uid) {
   try {
     const docSnap = await getDoc(doc(db, 'customers', uid));
@@ -109,13 +110,13 @@ async function getCustomerProfile(uid) {
   }
 }
 
-/* Apply for Pembe Family membership */
+/* ---- APPLY PEMBE FAMILY ---- */
 async function applyPembeFamily(uid) {
   try {
     await updateDoc(doc(db, 'customers', uid), {
-      pembeFamily:      true,
-      memberStatus:     'pembe-family',
-      memberSince:      new Date().toISOString()
+      pembeFamily:  true,
+      memberStatus: 'pembe-family',
+      memberSince:  new Date().toISOString()
     });
     return { success: true };
   } catch (error) {
