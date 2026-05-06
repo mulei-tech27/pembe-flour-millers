@@ -161,23 +161,50 @@
     let currentUser   = null;
     let customerData  = null;
 
-    /* Check login status */
-    onAuthStateChanged(auth, async function(user) {
-      if (!user) {
-        /* Not logged in — redirect to login */
-        window.location.href = 'login.html';
-        return;
-      }
+   /* Show loading state while Firebase initializes */
+document.getElementById('welcome-title').textContent = 'Loading...';
+document.getElementById('welcome-sub').textContent   = 'Please wait a moment';
 
-      currentUser = user;
+onAuthStateChanged(auth, async function(user) {
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
 
-      /* Load profile from Firestore */
-      const result = await getCustomerProfile(user.uid);
-      if (result.success) {
-        customerData = result.data;
-        displayProfile(customerData);
-      }
-    });
+  currentUser = user;
+
+  /* Try loading profile up to 3 times */
+  let attempts = 0;
+  let result   = { success: false };
+
+  while (!result.success && attempts < 3) {
+    attempts++;
+    result = await getCustomerProfile(user.uid);
+
+    /* Wait 1 second between attempts */
+    if (!result.success && attempts < 3) {
+      await new Promise(function(resolve) {
+        setTimeout(resolve, 1000);
+      });
+    }
+  }
+
+  if (result.success) {
+    customerData = result.data;
+    displayProfile(customerData);
+  } else {
+    /* Profile not found — create a basic display
+       using the auth email as fallback */
+    document.getElementById('welcome-title').textContent = 'Welcome! 👋';
+    document.getElementById('welcome-sub').textContent   = 'Your account is ready';
+    document.getElementById('profile-avatar').textContent =
+      user.email.charAt(0).toUpperCase();
+    document.getElementById('profile-name').textContent  = user.displayName || 'Member';
+    document.getElementById('profile-email').textContent = user.email;
+    document.getElementById('profile-phone').textContent = 'Not set';
+    document.getElementById('points-number').textContent = '0';
+  }
+});
 
     /* Display profile info */
     function displayProfile(data) {
