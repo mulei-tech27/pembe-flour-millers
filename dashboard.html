@@ -246,29 +246,42 @@ onAuthStateChanged(auth, async function(user) {
       }
     }
 
-    /* Apply for Pembe Family */
     window.handleFamilyAction = async function() {
-      if (!currentUser) return;
-      if (customerData && customerData.pembeFamily) return;
+  if (!currentUser) {
+    window.location.href = 'login.html';
+    return;
+  }
+  if (customerData && customerData.pembeFamily) return;
 
-      const btn = document.getElementById('family-btn');
-      btn.textContent = 'Applying...';
-      btn.disabled    = true;
+  const btn = document.getElementById('family-btn');
+  btn.textContent = 'Applying...';
+  btn.disabled    = true;
 
-      const result = await applyPembeFamily(currentUser.uid);
+  /* Try applying up to 3 times */
+  let success = false;
+  let attempts = 0;
 
-      if (result.success) {
-        customerData.pembeFamily  = true;
-        customerData.memberStatus = 'pembe-family';
-        displayProfile(customerData);
-        alert('🎉 Welcome to the Pembe Family! You now enjoy exclusive benefits.');
-      } else {
-        btn.textContent = 'Apply Now →';
-        btn.disabled    = false;
-        alert('Something went wrong. Please try again.');
-      }
-    };
+  while (!success && attempts < 3) {
+    attempts++;
+    const result = await applyPembeFamily(currentUser.uid);
+    if (result.success) {
+      success = true;
+    } else {
+      console.log('Attempt ' + attempts + ' failed:', result.error);
+      await new Promise(function(r) { setTimeout(r, 1000); });
+    }
+  }
 
+  if (success) {
+    if (customerData) customerData.pembeFamily = true;
+    displayProfile(customerData || { pembeFamily: true, fullName: 'Member', email: currentUser.email, phone: 'Not set', points: 0 });
+    alert('🎉 Welcome to the Pembe Family! You now enjoy exclusive benefits.');
+  } else {
+    btn.textContent = 'Apply Now →';
+    btn.disabled    = false;
+    alert('Could not apply right now. Please try again in a moment.');
+  }
+};
     /* Logout */
     window.handleLogout = async function() {
       await logoutUser();
