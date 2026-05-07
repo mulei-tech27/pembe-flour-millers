@@ -1097,3 +1097,100 @@ textarea { resize: vertical; }
   color: var(--text-muted);
   margin-bottom: 24px;
 }
+/* ---- LEADERBOARD PAGE ---- */
+.podium-cards {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.podium-card {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  text-align: center;
+  min-width: 160px;
+  transition: transform 0.2s;
+}
+
+.podium-card:hover { transform: translateY(-4px); }
+
+.podium-medal  { font-size: 36px; margin-bottom: 10px; }
+
+.podium-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+
+.podium-name   { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.podium-points { font-size: 18px; font-weight: 700; }
+
+/* Full table */
+.lb-table  { display: flex; flex-direction: column; gap: 8px; }
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s;
+}
+
+.lb-row:hover  { border-color: var(--gold); }
+.lb-top        { border-color: var(--gold); background: var(--gold-pale); }
+.lb-rank       { font-size: 18px; min-width: 32px; }
+
+.lb-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lb-name  { flex: 1; font-size: 14px; font-weight: 600; }
+.lb-pts   { font-size: 14px; font-weight: 700; color: var(--brown); }
+
+/* Points rules */
+.points-explainer  { margin-top: 50px; }
+
+.points-rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.points-rule {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.points-rule:hover { transform: translateY(-3px); border-color: var(--gold); }
+.points-rule span  { font-size: 32px; display: block; margin-bottom: 10px; }
+.points-rule h4    { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.points-rule p     { font-size: 12px; color: var(--text-muted); line-height: 1.5; }

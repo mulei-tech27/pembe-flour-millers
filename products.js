@@ -399,23 +399,85 @@ function toggleCart() {
   overlay.classList.toggle('open', !isOpen);
 }
 
-/* ---- CHECKOUT ---- */
 function checkout() {
   if (cart.length === 0) { showToast('Your cart is empty!'); return; }
+
   const lines = cart.map(function(item) {
     return '• ' + item.name + ' (' + item.size + ') ×' + item.qty +
       ' = KSh ' + (item.price * item.qty).toLocaleString();
   }).join('\n');
+
   const total   = cart.reduce(function(s, c) { return s + c.price * c.qty; }, 0);
   const subject = 'Order from Pembe Flour Millers Website';
   const body    = 'Hello,\n\nI would like to place the following order:\n\n'
     + lines + '\n\nTotal: KSh ' + total.toLocaleString()
     + '\n\nPlease confirm availability and delivery details.\n\nThank you.';
+
   window.open(
     'mailto:orders@pembeflourmillers.com' +
     '?subject=' + encodeURIComponent(subject) +
     '&body='    + encodeURIComponent(body)
   );
+
+  /* Award points if customer is logged in */
+  awardPointsForOrder(total);
+}
+
+/* Award points after checkout */
+async function awardPointsForOrder(total) {
+  try {
+    /* Dynamically import Firebase functions */
+    const { getAuth }    = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+    const { getFirestore, doc, getDoc, updateDoc, setDoc } =
+      await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+    const { initializeApp, getApps } =
+      await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyfhj8WIf1V9syxpLCEpgbW1jQBFQ3RVE",
+      authDomain: "pembe-flour-millers.firebaseapp.com",
+      projectId: "pembe-flour-millers",
+      storageBucket: "pembe-flour-millers.firebasestorage.app",
+      messagingSenderId: "776266354891",
+      appId: "1:776266354891:web:a6ba0359c42331a0370b4e"
+    };
+
+    const app  = getApps().length
+      ? getApps()[0]
+      : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+    const user = auth.currentUser;
+
+    if (!user) return; /* not logged in — no points */
+
+    /* Get customer profile */
+    const docSnap = await getDoc(doc(db, 'customers', user.uid));
+    if (!docSnap.exists()) return;
+
+    const data          = docSnap.data();
+    const isPembeFamily = data.pembeFamily || false;
+    const basePoints    = Math.floor(total / 10);
+    const pointsEarned  = isPembeFamily ? basePoints * 2 : basePoints;
+    const newPoints     = (data.points || 0) + pointsEarned;
+
+    /* Update points */
+    await updateDoc(doc(db, 'customers', user.uid), {
+      points: newPoints
+    });
+
+    /* Update leaderboard */
+    await setDoc(doc(db, 'leaderboard', user.uid), {
+      fullName:  data.fullName || 'Member',
+      points:    newPoints,
+      updatedAt: new Date().toISOString()
+    });
+
+    showToast('🌟 You earned ' + pointsEarned + ' points!');
+
+  } catch (error) {
+    console.error('Points error:', error);
+  }
 }
 
 function whatsappOrder() {

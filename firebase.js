@@ -3,8 +3,17 @@
    ============================================================ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getFirestore, collection, getDocs,
+  doc, updateDoc, setDoc, getDoc, query, orderBy, limit
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 /* ---- FIREBASE CONFIG ---- */
 const firebaseConfig = {
@@ -50,16 +59,15 @@ async function updateStock(docId, newStock) {
   }
 }
 
+/* ---- AUTH FUNCTIONS ---- */
 async function registerUser(email, password, fullName, phone) {
   try {
-    /* Create auth account */
     const userCredential = await createUserWithEmailAndPassword(
       auth, email, password
     );
     const user = userCredential.user;
 
-    /* Store name and phone in localStorage temporarily
-       They will be saved to Firestore on first dashboard load */
+    /* Save to localStorage — dashboard will save to Firestore */
     localStorage.setItem('pending_profile', JSON.stringify({
       fullName: fullName,
       phone:    phone,
@@ -68,14 +76,11 @@ async function registerUser(email, password, fullName, phone) {
     }));
 
     return { success: true, user };
-
   } catch (error) {
-    console.error('Registration error:', error);
     return { success: false, error: error.message };
   }
 }
 
-/* ---- LOGIN ---- */
 async function loginUser(email, password) {
   try {
     const userCredential = await signInWithEmailAndPassword(
@@ -87,7 +92,6 @@ async function loginUser(email, password) {
   }
 }
 
-/* ---- LOGOUT ---- */
 async function logoutUser() {
   try {
     await signOut(auth);
@@ -97,7 +101,6 @@ async function logoutUser() {
   }
 }
 
-/* ---- GET PROFILE ---- */
 async function getCustomerProfile(uid) {
   try {
     const docSnap = await getDoc(doc(db, 'customers', uid));
@@ -110,7 +113,6 @@ async function getCustomerProfile(uid) {
   }
 }
 
-/* ---- APPLY PEMBE FAMILY ---- */
 async function applyPembeFamily(uid) {
   try {
     await updateDoc(doc(db, 'customers', uid), {
@@ -124,10 +126,74 @@ async function applyPembeFamily(uid) {
   }
 }
 
+/* ---- POINTS FUNCTIONS ---- */
+
+/* Calculate points from order total
+   1 point for every KSh 10 spent
+   Pembe Family members get 2x points */
+function calculatePoints(orderTotal, isPembeFamily) {
+  const basePoints = Math.floor(orderTotal / 10);
+  return isPembeFamily ? basePoints * 2 : basePoints;
+}
+
+/* Add points to a customer after an order */
+async function addPoints(uid, orderTotal, isPembeFamily) {
+  try {
+    const pointsEarned = calculatePoints(orderTotal, isPembeFamily);
+
+    /* Get current points */
+    const docSnap = await getDoc(doc(db, 'customers', uid));
+    if (!docSnap.exists()) return { success: false };
+
+    const currentPoints = docSnap.data().points || 0;
+    const newPoints     = currentPoints + pointsEarned;
+    const fullName      = docSnap.data().fullName || 'Member';
+
+    /* Update customer points */
+    await updateDoc(doc(db, 'customers', uid), {
+      points: newPoints
+    });
+
+    /* Update leaderboard */
+    await setDoc(doc(db, 'leaderboard', uid), {
+      fullName:  fullName,
+      points:    newPoints,
+      updatedAt: new Date().toISOString()
+    });
+
+    return { success: true, pointsEarned, newTotal: newPoints };
+  } catch (error) {
+    console.error('Error adding points:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/* Load top 10 customers for leaderboard */
+async function loadLeaderboard() {
+  try {
+    const q        = query(
+      collection(db, 'leaderboard'),
+      orderBy('points', 'desc'),
+      limit(10)
+    );
+    const snapshot = await getDocs(q);
+    const leaders  = [];
+    snapshot.forEach(function(docSnap) {
+      leaders.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    return { success: true, data: leaders };
+  } catch (error) {
+    console.error('Error loading leaderboard:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 export {
   db, auth,
   loadStock, updateStock,
   registerUser, loginUser, logoutUser,
   getCustomerProfile, applyPembeFamily,
+  addPoints, loadLeaderboard,
+  calculatePoints,
   onAuthStateChanged
 };
