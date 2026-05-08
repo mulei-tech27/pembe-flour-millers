@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — Pembe Flour Millers</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="logo">
+      <img src="images/pembe-logo.png" alt="Pembe Logo" class="logo-img" />
+      <div class="logo-text">
+        <span class="logo-name">Pembe</span>
+        <span class="logo-tagline">Admin Panel</span>
+      </div>
+    </div>
+    <a href="index.html" class="cart-btn">← Back to Site</a>
+  </header>
+
+  <!-- Login check message -->
+  <div id="access-denied" style="display:none">
+    <section class="page-hero">
+      <h1>🔒 Access Denied</h1>
+      <p>You must be logged in as admin to access this page</p>
+    </section>
+    <div style="text-align:center;padding:40px">
+      <a href="login.html" class="btn-primary">Login as Admin</a>
+    </div>
+  </div>
+
+  <!-- Admin content -->
+  <div id="admin-content" style="display:none">
+
+    <section class="page-hero">
+      <h1>⚙️ Admin Panel</h1>
+      <p>Post news, manage banners and update stock</p>
+    </section>
+
+    <section class="section">
+
+      <!-- Admin tabs -->
+      <div class="auth-tabs" style="max-width:700px;margin:0 auto 28px">
+        <button class="auth-tab active" onclick="showAdminTab('news')">
+          📰 Post News
+        </button>
+        <button class="auth-tab" onclick="showAdminTab('banner')">
+          🎯 Add Banner
+        </button>
+        <button class="auth-tab" onclick="showAdminTab('stock')">
+          📦 Update Stock
+        </button>
+      </div>
+
+      <!-- POST NEWS FORM -->
+      <div class="auth-card" id="admin-news" style="max-width:700px;margin:0 auto">
+        <h2>Post a News Article</h2>
+        <p class="auth-sub">This will appear on the News page immediately</p>
+
+        <div class="form-group">
+          <label>Article Title *</label>
+          <input type="text" id="news-title"
+            placeholder="e.g. New Product Launch: Pembe Whole Wheat Flour" />
+        </div>
+
+        <div class="form-group">
+          <label>Category</label>
+          <select id="news-category" class="filter-select" style="width:100%">
+            <option value="Announcement">Announcement</option>
+            <option value="Promotion">Promotion</option>
+            <option value="Product News">Product News</option>
+            <option value="Company News">Company News</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Short Excerpt * (shown on news card)</label>
+          <input type="text" id="news-excerpt"
+            placeholder="A brief one-line summary of the article" />
+        </div>
+
+        <div class="form-group">
+          <label>Full Content *</label>
+          <textarea id="news-content" rows="6"
+            placeholder="Write the full article content here..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Image URL (optional)</label>
+          <input type="text" id="news-image"
+            placeholder="https://... paste an image link here" />
+        </div>
+
+        <div class="auth-error" id="news-error"></div>
+        <div class="form-success" id="news-success">
+          ✅ Article posted successfully!
+        </div>
+
+        <button class="btn-primary full-width" onclick="postNews()">
+          Publish Article →
+        </button>
+      </div>
+
+      <!-- ADD BANNER FORM -->
+      <div class="auth-card" id="admin-banner"
+        style="max-width:700px;margin:0 auto;display:none">
+        <h2>Add Promotional Banner</h2>
+        <p class="auth-sub">Banners appear at the top of the homepage</p>
+
+        <div class="form-group">
+          <label>Banner Text *</label>
+          <input type="text" id="banner-text"
+            placeholder="e.g. 🎉 20% OFF all wheat flour this weekend!" />
+        </div>
+
+        <div class="form-group">
+          <label>Button Text</label>
+          <input type="text" id="banner-btn-text"
+            placeholder="e.g. Shop Now" />
+        </div>
+
+        <div class="form-group">
+          <label>Button Link</label>
+          <input type="text" id="banner-btn-link"
+            placeholder="e.g. products.html" />
+        </div>
+
+        <div class="form-group">
+          <label>Background Color</label>
+          <select id="banner-color" class="filter-select" style="width:100%">
+            <option value="green">Green</option>
+            <option value="gold">Gold</option>
+            <option value="dark">Dark</option>
+            <option value="red">Red (Urgent)</option>
+          </select>
+        </div>
+
+        <div class="auth-error" id="banner-error"></div>
+        <div class="form-success" id="banner-success">
+          ✅ Banner added successfully!
+        </div>
+
+        <button class="btn-primary full-width" onclick="addBanner()">
+          Add Banner →
+        </button>
+      </div>
+
+      <!-- UPDATE STOCK FORM -->
+      <div class="auth-card" id="admin-stock"
+        style="max-width:700px;margin:0 auto;display:none">
+        <h2>Update Stock Levels</h2>
+        <p class="auth-sub">Changes update live on the products page</p>
+        <div id="stock-list">
+          <p style="color:var(--text-muted)">Loading products...</p>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="footer-copy" style="margin-top:40px">
+    © 2026 Pembe Flour Millers Admin Panel
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs,
+      addDoc, doc, updateDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyfhj8WIf1V9syxpLCEpgbW1jQBFQ3RVE",
+      authDomain: "pembe-flour-millers.firebaseapp.com",
+      projectId: "pembe-flour-millers",
+      storageBucket: "pembe-flour-millers.firebasestorage.app",
+      messagingSenderId: "776266354891",
+      appId: "1:776266354891:web:a6ba0359c42331a0370b4e"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const db   = getFirestore(app);
+    const auth = getAuth(app);
+
+    /* Admin email — only this email can access */
+    const ADMIN_EMAIL = 'muleititus83@gmail.com';
+
+    /* Check if admin is logged in */
+    onAuthStateChanged(auth, async function(user) {
+      if (!user || user.email !== ADMIN_EMAIL) {
+        document.getElementById('access-denied').style.display = 'block';
+        return;
+      }
+      document.getElementById('admin-content').style.display = 'block';
+      loadStockList();
+    });
+
+    /* Switch tabs */
+    window.showAdminTab = function(tab) {
+      document.getElementById('admin-news').style.display =
+        tab === 'news'   ? 'block' : 'none';
+      document.getElementById('admin-banner').style.display =
+        tab === 'banner' ? 'block' : 'none';
+      document.getElementById('admin-stock').style.display =
+        tab === 'stock'  ? 'block' : 'none';
+
+      document.querySelectorAll('.auth-tab').forEach(function(btn, i) {
+        btn.classList.toggle('active',
+          (i === 0 && tab === 'news') ||
+          (i === 1 && tab === 'banner') ||
+          (i === 2 && tab === 'stock')
+        );
+      });
+    };
+
+    /* Post news article */
+    window.postNews = async function() {
+      const title    = document.getElementById('news-title').value.trim();
+      const category = document.getElementById('news-category').value;
+      const excerpt  = document.getElementById('news-excerpt').value.trim();
+      const content  = document.getElementById('news-content').value.trim();
+      const imageUrl = document.getElementById('news-image').value.trim();
+      const errorEl  = document.getElementById('news-error');
+
+      errorEl.textContent = '';
+
+      if (!title || !excerpt || !content) {
+        errorEl.textContent = 'Please fill in all required fields.';
+        return;
+      }
+
+      const btn = document.querySelector('#admin-news .btn-primary');
+      btn.textContent = 'Publishing...';
+      btn.disabled    = true;
+
+      try {
+        await addDoc(collection(db, 'news'), {
+          title,
+          category,
+          excerpt,
+          content,
+          imageUrl:  imageUrl || null,
+          createdAt: new Date().toISOString(),
+          author:    'Pembe Flour Millers'
+        });
+
+        document.getElementById('news-success').style.display = 'block';
+        document.getElementById('news-title').value    = '';
+        document.getElementById('news-excerpt').value  = '';
+        document.getElementById('news-content').value  = '';
+        document.getElementById('news-image').value    = '';
+
+        setTimeout(function() {
+          document.getElementById('news-success').style.display = 'none';
+        }, 3000);
+
+      } catch (error) {
+        errorEl.textContent = 'Error posting article: ' + error.message;
+      }
+
+      btn.textContent = 'Publish Article →';
+      btn.disabled    = false;
+    };
+
+    /* Add banner */
+    window.addBanner = async function() {
+      const text     = document.getElementById('banner-text').value.trim();
+      const btnText  = document.getElementById('banner-btn-text').value.trim();
+      const btnLink  = document.getElementById('banner-btn-link').value.trim();
+      const color    = document.getElementById('banner-color').value;
+      const errorEl  = document.getElementById('banner-error');
+
+      errorEl.textContent = '';
+
+      if (!text) {
+        errorEl.textContent = 'Please enter banner text.';
+        return;
+      }
+
+      const btn = document.querySelector('#admin-banner .btn-primary');
+      btn.textContent = 'Adding...';
+      btn.disabled    = true;
+
+      try {
+        await addDoc(collection(db, 'banners'), {
+          text,
+          btnText:   btnText  || null,
+          btnLink:   btnLink  || null,
+          color,
+          active:    true,
+          createdAt: new Date().toISOString()
+        });
+
+        document.getElementById('banner-success').style.display = 'block';
+        document.getElementById('banner-text').value     = '';
+        document.getElementById('banner-btn-text').value = '';
+        document.getElementById('banner-btn-link').value = '';
+
+        setTimeout(function() {
+          document.getElementById('banner-success').style.display = 'none';
+        }, 3000);
+
+      } catch (error) {
+        errorEl.textContent = 'Error adding banner: ' + error.message;
+      }
+
+      btn.textContent = 'Add Banner →';
+      btn.disabled    = false;
+    };
+
+    /* Load stock list */
+    async function loadStockList() {
+      const listEl = document.getElementById('stock-list');
+      try {
+        const snapshot = await getDocs(collection(db, 'products'));
+        const products = [];
+        snapshot.forEach(function(docSnap) {
+          products.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        listEl.innerHTML = products.map(function(p) {
+          return `
+            <div class="stock-row">
+              <span class="stock-name">${p.name}</span>
+              <div class="stock-controls">
+                <input
+                  type="number"
+                  class="stock-input"
+                  id="stock-${p.id}"
+                  value="${p.stock}"
+                  min="0"
+                />
+                <button
+                  class="btn-small"
+                  onclick="updateStock('${p.id}', '${p.name}')">
+                  Update
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (error) {
+        listEl.innerHTML =
+          '<p style="color:#e24b4a">Error loading products: ' +
+          error.message + '</p>';
+      }
+    }
+
+    /* Update stock */
+    window.updateStock = async function(docId, name) {
+      const input    = document.getElementById('stock-' + docId);
+      const newStock = parseInt(input.value);
+
+      if (isNaN(newStock) || newStock < 0) {
+        alert('Please enter a valid stock number.');
+        return;
+      }
+
+      try {
+        await updateDoc(doc(db, 'products', docId), { stock: newStock });
+        alert('✅ Stock updated for ' + name + ' → ' + newStock + ' units');
+      } catch (error) {
+        alert('Error updating stock: ' + error.message);
+      }
+    };
+  </script>
+
+</body>
+</html>

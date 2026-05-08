@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="images/favicon.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>News — Pembe Flour Millers</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="logo">
+      <img src="images/pembe-logo.png" alt="Pembe Logo" class="logo-img" />
+      <div class="logo-text">
+        <span class="logo-name">Pembe</span>
+        <span class="logo-tagline">Flour Millers</span>
+      </div>
+    </div>
+    <nav class="nav-links" id="nav-links">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="about.html">About</a>
+      <a href="news.html" class="active">News</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html">Login</a>
+    </nav>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="products.html" class="cart-btn">🛒 Shop Now</a>
+  </header>
+
+  <section class="page-hero">
+    <h1>News & Updates</h1>
+    <p>Latest announcements, promotions and company news</p>
+  </section>
+
+  <section class="section">
+
+    <!-- News grid -->
+    <div class="news-grid" id="news-grid">
+      <div style="text-align:center;padding:40px;color:var(--text-muted);">
+        Loading news...
+      </div>
+    </div>
+
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-col">
+      <strong class="footer-logo">Pembe Flour Millers</strong>
+      <p>Quality you can taste.<br>Nairobi, Kenya.</p>
+    </div>
+    <div class="footer-col">
+      <strong>Quick Links</strong>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <strong>Contact Us</strong>
+      <p>📞 +254 745 319 126</p>
+      <p>✉️ orders@pembeflourmillers.com</p>
+      <p>📍 Nairobi City, Kenya</p>
+    </div>
+  </footer>
+  <div class="footer-copy">© 2026 Pembe Flour Millers. All Rights Reserved.</div>
+
+  <button class="back-to-top" id="backToTop"
+    onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, orderBy, query }
+      from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyfhj8WIf1V9syxpLCEpgbW1jQBFQ3RVE",
+      authDomain: "pembe-flour-millers.firebaseapp.com",
+      projectId: "pembe-flour-millers",
+      storageBucket: "pembe-flour-millers.firebasestorage.app",
+      messagingSenderId: "776266354891",
+      appId: "1:776266354891:web:a6ba0359c42331a0370b4e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    /* Category badge colors */
+    function getCategoryStyle(cat) {
+      const styles = {
+        'Promotion':    'background:#D4A01722;color:#D4A017;border:1px solid #D4A01744',
+        'Product News': 'background:#3B6D1122;color:#3B6D11;border:1px solid #3B6D1144',
+        'Company News': 'background:#185FA522;color:#185FA5;border:1px solid #185FA544',
+        'Announcement': 'background:#993C1D22;color:#993C1D;border:1px solid #993C1D44'
+      };
+      return styles[cat] || styles['Announcement'];
+    }
+
+    /* Format date nicely */
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-KE', {
+        day:   'numeric',
+        month: 'long',
+        year:  'numeric'
+      });
+    }
+
+    /* Load news from Firestore */
+    async function loadNews() {
+      const grid = document.getElementById('news-grid');
+      try {
+        const q        = query(
+          collection(db, 'news'),
+          orderBy('createdAt', 'desc')
+        );
+        const snapshot = await getDocs(q);
+        const articles = [];
+        snapshot.forEach(function(docSnap) {
+          articles.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        if (articles.length === 0) {
+          grid.innerHTML = `
+            <div style="text-align:center;padding:60px 20px;color:var(--text-muted)">
+              <div style="font-size:48px;margin-bottom:16px">📰</div>
+              <h3 style="margin-bottom:8px">No news yet</h3>
+              <p>Check back soon for updates and announcements!</p>
+            </div>`;
+          return;
+        }
+
+        grid.innerHTML = articles.map(function(article) {
+          return `
+            <div class="news-card">
+              ${article.imageUrl ? `
+                <img src="${article.imageUrl}"
+                     alt="${article.title}"
+                     class="news-img">
+              ` : `
+                <div class="news-img-placeholder">📰</div>
+              `}
+              <div class="news-body">
+                <div class="news-meta">
+                  <span class="news-category"
+                    style="${getCategoryStyle(article.category)}">
+                    ${article.category || 'News'}
+                  </span>
+                  <span class="news-date">
+                    ${formatDate(article.createdAt)}
+                  </span>
+                </div>
+                <h3 class="news-title">${article.title}</h3>
+                <p class="news-excerpt">${article.excerpt}</p>
+                <div class="news-content">${article.content}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (error) {
+        console.error('Error loading news:', error);
+        grid.innerHTML = `
+          <div style="text-align:center;padding:40px;color:var(--text-muted)">
+            Could not load news. Please try again later.
+          </div>`;
+      }
+    }
+
+    loadNews();
+
+    window.toggleMenu = function() {
+      document.getElementById('nav-links').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    };
+
+    window.addEventListener('scroll', function() {
+      const btn = document.getElementById('backToTop');
+      if (btn) btn.classList.toggle('visible', window.scrollY > 400);
+    });
+  </script>
+
+</body>
+</html>
