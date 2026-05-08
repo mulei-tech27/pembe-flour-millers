@@ -19,7 +19,6 @@
     <a href="index.html" class="cart-btn">← Back to Site</a>
   </header>
 
-  <!-- Login check message -->
   <div id="access-denied" style="display:none">
     <section class="page-hero">
       <h1>🔒 Access Denied</h1>
@@ -30,129 +29,200 @@
     </div>
   </div>
 
-  <!-- Admin content -->
   <div id="admin-content" style="display:none">
 
     <section class="page-hero">
       <h1>⚙️ Admin Panel</h1>
-      <p>Post news, manage banners and update stock</p>
+      <p>Manage your website content from here</p>
     </section>
 
     <section class="section">
 
       <!-- Admin tabs -->
-      <div class="auth-tabs" style="max-width:700px;margin:0 auto 28px">
-        <button class="auth-tab active" onclick="showAdminTab('news')">
-          📰 Post News
-        </button>
-        <button class="auth-tab" onclick="showAdminTab('banner')">
-          🎯 Add Banner
-        </button>
-        <button class="auth-tab" onclick="showAdminTab('stock')">
-          📦 Update Stock
-        </button>
+      <div class="auth-tabs" style="max-width:800px;margin:0 auto 28px;display:flex">
+        <button class="auth-tab active" onclick="showAdminTab('news')">📰 News</button>
+        <button class="auth-tab" onclick="showAdminTab('banner')">🎯 Banners</button>
+        <button class="auth-tab" onclick="showAdminTab('video')">🎬 Videos</button>
+        <button class="auth-tab" onclick="showAdminTab('stock')">📦 Stock</button>
       </div>
 
-      <!-- POST NEWS FORM -->
-      <div class="auth-card" id="admin-news" style="max-width:700px;margin:0 auto">
-        <h2>Post a News Article</h2>
-        <p class="auth-sub">This will appear on the News page immediately</p>
+      <!-- ===== NEWS TAB ===== -->
+      <div id="admin-news" style="max-width:800px;margin:0 auto">
 
-        <div class="form-group">
-          <label>Article Title *</label>
-          <input type="text" id="news-title"
-            placeholder="e.g. New Product Launch: Pembe Whole Wheat Flour" />
+        <!-- Post new article -->
+        <div class="auth-card" style="margin-bottom:24px">
+          <h2>Post a News Article</h2>
+          <p class="auth-sub">Appears on the News page immediately</p>
+
+          <div class="form-group">
+            <label>Title *</label>
+            <input type="text" id="news-title"
+              placeholder="e.g. New Product Launch!" />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="news-category" class="filter-select" style="width:100%">
+              <option value="Announcement">Announcement</option>
+              <option value="Promotion">Promotion</option>
+              <option value="Product News">Product News</option>
+              <option value="Company News">Company News</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Short Excerpt * (shown on card)</label>
+            <input type="text" id="news-excerpt"
+              placeholder="One line summary" />
+          </div>
+          <div class="form-group">
+            <label>Full Content *</label>
+            <textarea id="news-content" rows="5"
+              placeholder="Full article text..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Image URL (optional)</label>
+            <input type="text" id="news-image"
+              placeholder="https://... image link" />
+          </div>
+          <div class="form-group">
+            <label>YouTube Video URL (optional)</label>
+            <input type="text" id="news-video"
+              placeholder="https://www.youtube.com/watch?v=..." />
+          </div>
+
+          <div class="auth-error"   id="news-error"></div>
+          <div class="form-success" id="news-success">✅ Article posted!</div>
+
+          <button class="btn-primary full-width" onclick="postNews()">
+            Publish Article →
+          </button>
         </div>
 
-        <div class="form-group">
-          <label>Category</label>
-          <select id="news-category" class="filter-select" style="width:100%">
-            <option value="Announcement">Announcement</option>
-            <option value="Promotion">Promotion</option>
-            <option value="Product News">Product News</option>
-            <option value="Company News">Company News</option>
-          </select>
+        <!-- Existing articles -->
+        <div class="auth-card">
+          <h2>Existing Articles</h2>
+          <p class="auth-sub">Click delete to remove an article permanently</p>
+          <div id="news-list">
+            <p style="color:var(--text-muted)">Loading...</p>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Short Excerpt * (shown on news card)</label>
-          <input type="text" id="news-excerpt"
-            placeholder="A brief one-line summary of the article" />
-        </div>
-
-        <div class="form-group">
-          <label>Full Content *</label>
-          <textarea id="news-content" rows="6"
-            placeholder="Write the full article content here..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Image URL (optional)</label>
-          <input type="text" id="news-image"
-            placeholder="https://... paste an image link here" />
-        </div>
-
-        <div class="auth-error" id="news-error"></div>
-        <div class="form-success" id="news-success">
-          ✅ Article posted successfully!
-        </div>
-
-        <button class="btn-primary full-width" onclick="postNews()">
-          Publish Article →
-        </button>
       </div>
 
-      <!-- ADD BANNER FORM -->
-      <div class="auth-card" id="admin-banner"
-        style="max-width:700px;margin:0 auto;display:none">
-        <h2>Add Promotional Banner</h2>
-        <p class="auth-sub">Banners appear at the top of the homepage</p>
+      <!-- ===== BANNERS TAB ===== -->
+      <div id="admin-banner"
+        style="max-width:800px;margin:0 auto;display:none">
 
-        <div class="form-group">
-          <label>Banner Text *</label>
-          <input type="text" id="banner-text"
-            placeholder="e.g. 🎉 20% OFF all wheat flour this weekend!" />
+        <!-- Add new banner -->
+        <div class="auth-card" style="margin-bottom:24px">
+          <h2>Add Promotional Banner</h2>
+          <p class="auth-sub">Appears at the top of the homepage</p>
+
+          <div class="form-group">
+            <label>Banner Text *</label>
+            <input type="text" id="banner-text"
+              placeholder="e.g. 🎉 20% OFF this weekend!" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Button Text</label>
+              <input type="text" id="banner-btn-text"
+                placeholder="e.g. Shop Now" />
+            </div>
+            <div class="form-group">
+              <label>Button Link</label>
+              <input type="text" id="banner-btn-link"
+                placeholder="e.g. products.html" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Color Theme</label>
+            <select id="banner-color" class="filter-select" style="width:100%">
+              <option value="green">Green</option>
+              <option value="gold">Gold</option>
+              <option value="dark">Dark</option>
+              <option value="red">Red (Urgent)</option>
+            </select>
+          </div>
+
+          <div class="auth-error"   id="banner-error"></div>
+          <div class="form-success" id="banner-success">✅ Banner added!</div>
+
+          <button class="btn-primary full-width" onclick="addBanner()">
+            Add Banner →
+          </button>
         </div>
 
-        <div class="form-group">
-          <label>Button Text</label>
-          <input type="text" id="banner-btn-text"
-            placeholder="e.g. Shop Now" />
+        <!-- Existing banners -->
+        <div class="auth-card">
+          <h2>Active Banners</h2>
+          <p class="auth-sub">
+            Toggle to show/hide. Delete to remove permanently.
+          </p>
+          <div id="banner-list">
+            <p style="color:var(--text-muted)">Loading...</p>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Button Link</label>
-          <input type="text" id="banner-btn-link"
-            placeholder="e.g. products.html" />
-        </div>
-
-        <div class="form-group">
-          <label>Background Color</label>
-          <select id="banner-color" class="filter-select" style="width:100%">
-            <option value="green">Green</option>
-            <option value="gold">Gold</option>
-            <option value="dark">Dark</option>
-            <option value="red">Red (Urgent)</option>
-          </select>
-        </div>
-
-        <div class="auth-error" id="banner-error"></div>
-        <div class="form-success" id="banner-success">
-          ✅ Banner added successfully!
-        </div>
-
-        <button class="btn-primary full-width" onclick="addBanner()">
-          Add Banner →
-        </button>
       </div>
 
-      <!-- UPDATE STOCK FORM -->
-      <div class="auth-card" id="admin-stock"
-        style="max-width:700px;margin:0 auto;display:none">
-        <h2>Update Stock Levels</h2>
-        <p class="auth-sub">Changes update live on the products page</p>
-        <div id="stock-list">
-          <p style="color:var(--text-muted)">Loading products...</p>
+      <!-- ===== VIDEOS TAB ===== -->
+      <div id="admin-video"
+        style="max-width:800px;margin:0 auto;display:none">
+
+        <!-- Add video -->
+        <div class="auth-card" style="margin-bottom:24px">
+          <h2>Add Company Video</h2>
+          <p class="auth-sub">
+            Videos appear in the Media section on the homepage.
+            Use YouTube links for best results.
+          </p>
+
+          <div class="form-group">
+            <label>Video Title *</label>
+            <input type="text" id="video-title"
+              placeholder="e.g. Inside Our Milling Process" />
+          </div>
+          <div class="form-group">
+            <label>YouTube URL *</label>
+            <input type="text" id="video-url"
+              placeholder="https://www.youtube.com/watch?v=..." />
+            <p style="font-size:12px;color:var(--text-muted);margin-top:4px">
+              Go to YouTube → your video → Share → Copy Link
+            </p>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="video-desc" rows="3"
+              placeholder="Brief description of the video..."></textarea>
+          </div>
+
+          <div class="auth-error"   id="video-error"></div>
+          <div class="form-success" id="video-success">✅ Video added!</div>
+
+          <button class="btn-primary full-width" onclick="addVideo()">
+            Add Video →
+          </button>
+        </div>
+
+        <!-- Existing videos -->
+        <div class="auth-card">
+          <h2>Existing Videos</h2>
+          <div id="video-list">
+            <p style="color:var(--text-muted)">Loading...</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== STOCK TAB ===== -->
+      <div id="admin-stock"
+        style="max-width:800px;margin:0 auto;display:none">
+        <div class="auth-card">
+          <h2>Update Stock Levels</h2>
+          <p class="auth-sub">Changes update live on the products page</p>
+          <div id="stock-list">
+            <p style="color:var(--text-muted)">Loading...</p>
+          </div>
         </div>
       </div>
 
@@ -167,8 +237,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import {
-      getFirestore, collection, getDocs,
-      addDoc, doc, updateDoc, serverTimestamp
+      getFirestore, collection, getDocs, addDoc,
+      doc, updateDoc, deleteDoc, orderBy, query
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged }
       from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -182,52 +252,60 @@
       appId: "1:776266354891:web:a6ba0359c42331a0370b4e"
     };
 
-    const app  = initializeApp(firebaseConfig);
-    const db   = getFirestore(app);
-    const auth = getAuth(app);
-
-    /* Admin email — only this email can access */
+    const app        = initializeApp(firebaseConfig);
+    const db         = getFirestore(app);
+    const auth       = getAuth(app);
     const ADMIN_EMAIL = 'muleititus83@gmail.com';
 
-    /* Check if admin is logged in */
+    /* ---- AUTH CHECK ---- */
     onAuthStateChanged(auth, async function(user) {
       if (!user || user.email !== ADMIN_EMAIL) {
-        document.getElementById('access-denied').style.display = 'block';
+        document.getElementById('access-denied').style.display  = 'block';
         return;
       }
       document.getElementById('admin-content').style.display = 'block';
+      loadNewsList();
+      loadBannerList();
+      loadVideoList();
       loadStockList();
     });
 
-    /* Switch tabs */
+    /* ---- TAB SWITCHING ---- */
     window.showAdminTab = function(tab) {
-      document.getElementById('admin-news').style.display =
-        tab === 'news'   ? 'block' : 'none';
-      document.getElementById('admin-banner').style.display =
-        tab === 'banner' ? 'block' : 'none';
-      document.getElementById('admin-stock').style.display =
-        tab === 'stock'  ? 'block' : 'none';
-
+      ['news','banner','video','stock'].forEach(function(t) {
+        document.getElementById('admin-' + t).style.display =
+          t === tab ? 'block' : 'none';
+      });
       document.querySelectorAll('.auth-tab').forEach(function(btn, i) {
-        btn.classList.toggle('active',
-          (i === 0 && tab === 'news') ||
-          (i === 1 && tab === 'banner') ||
-          (i === 2 && tab === 'stock')
-        );
+        const tabs = ['news','banner','video','stock'];
+        btn.classList.toggle('active', tabs[i] === tab);
       });
     };
 
-    /* Post news article */
+    /* ---- YOUTUBE URL TO EMBED ---- */
+    function getYouTubeEmbed(url) {
+      if (!url) return null;
+      const match = url.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+      );
+      return match
+        ? 'https://www.youtube.com/embed/' + match[1]
+        : null;
+    }
+
+    /* ============================================================
+       NEWS
+    ============================================================ */
     window.postNews = async function() {
       const title    = document.getElementById('news-title').value.trim();
       const category = document.getElementById('news-category').value;
       const excerpt  = document.getElementById('news-excerpt').value.trim();
       const content  = document.getElementById('news-content').value.trim();
       const imageUrl = document.getElementById('news-image').value.trim();
+      const videoUrl = document.getElementById('news-video').value.trim();
       const errorEl  = document.getElementById('news-error');
 
       errorEl.textContent = '';
-
       if (!title || !excerpt || !content) {
         errorEl.textContent = 'Please fill in all required fields.';
         return;
@@ -239,43 +317,97 @@
 
       try {
         await addDoc(collection(db, 'news'), {
-          title,
-          category,
-          excerpt,
-          content,
-          imageUrl:  imageUrl || null,
+          title, category, excerpt, content,
+          imageUrl:  imageUrl  || null,
+          videoUrl:  getYouTubeEmbed(videoUrl) || null,
           createdAt: new Date().toISOString(),
           author:    'Pembe Flour Millers'
         });
 
         document.getElementById('news-success').style.display = 'block';
-        document.getElementById('news-title').value    = '';
-        document.getElementById('news-excerpt').value  = '';
-        document.getElementById('news-content').value  = '';
-        document.getElementById('news-image').value    = '';
-
+        ['news-title','news-excerpt','news-content',
+         'news-image','news-video'].forEach(function(id) {
+          document.getElementById(id).value = '';
+        });
         setTimeout(function() {
           document.getElementById('news-success').style.display = 'none';
         }, 3000);
+        loadNewsList();
 
       } catch (error) {
-        errorEl.textContent = 'Error posting article: ' + error.message;
+        errorEl.textContent = 'Error: ' + error.message;
       }
 
       btn.textContent = 'Publish Article →';
       btn.disabled    = false;
     };
 
-    /* Add banner */
+    async function loadNewsList() {
+      const listEl = document.getElementById('news-list');
+      try {
+        const q = query(
+          collection(db, 'news'),
+          orderBy('createdAt', 'desc')
+        );
+        const snapshot = await getDocs(q);
+        const articles = [];
+        snapshot.forEach(function(d) {
+          articles.push({ id: d.id, ...d.data() });
+        });
+
+        if (articles.length === 0) {
+          listEl.innerHTML =
+            '<p style="color:var(--text-muted)">No articles yet.</p>';
+          return;
+        }
+
+        listEl.innerHTML = articles.map(function(a) {
+          return `
+            <div class="admin-list-row">
+              <div class="admin-list-info">
+                <strong>${a.title}</strong>
+                <span style="font-size:12px;color:var(--text-muted)">
+                  ${a.category} — ${new Date(a.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              <div class="admin-list-actions">
+                <button class="btn-small delete-btn"
+                  onclick="deleteNews('${a.id}')">
+                  🗑 Delete
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (error) {
+        listEl.innerHTML =
+          '<p style="color:#e24b4a">Error: ' + error.message + '</p>';
+      }
+    }
+
+    window.deleteNews = async function(id) {
+      if (!confirm('Delete this article permanently?')) return;
+      try {
+        await deleteDoc(doc(db, 'news', id));
+        loadNewsList();
+        alert('✅ Article deleted.');
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    };
+
+    /* ============================================================
+       BANNERS
+    ============================================================ */
     window.addBanner = async function() {
-      const text     = document.getElementById('banner-text').value.trim();
-      const btnText  = document.getElementById('banner-btn-text').value.trim();
-      const btnLink  = document.getElementById('banner-btn-link').value.trim();
-      const color    = document.getElementById('banner-color').value;
-      const errorEl  = document.getElementById('banner-error');
+      const text    = document.getElementById('banner-text').value.trim();
+      const btnText = document.getElementById('banner-btn-text').value.trim();
+      const btnLink = document.getElementById('banner-btn-link').value.trim();
+      const color   = document.getElementById('banner-color').value;
+      const errorEl = document.getElementById('banner-error');
 
       errorEl.textContent = '';
-
       if (!text) {
         errorEl.textContent = 'Please enter banner text.';
         return;
@@ -287,39 +419,207 @@
 
       try {
         await addDoc(collection(db, 'banners'), {
-          text,
-          btnText:   btnText  || null,
-          btnLink:   btnLink  || null,
-          color,
-          active:    true,
+          text, btnText: btnText || null,
+          btnLink: btnLink || null,
+          color, active: true,
           createdAt: new Date().toISOString()
         });
 
         document.getElementById('banner-success').style.display = 'block';
-        document.getElementById('banner-text').value     = '';
-        document.getElementById('banner-btn-text').value = '';
-        document.getElementById('banner-btn-link').value = '';
-
+        ['banner-text','banner-btn-text','banner-btn-link'].forEach(function(id) {
+          document.getElementById(id).value = '';
+        });
         setTimeout(function() {
           document.getElementById('banner-success').style.display = 'none';
         }, 3000);
+        loadBannerList();
 
       } catch (error) {
-        errorEl.textContent = 'Error adding banner: ' + error.message;
+        errorEl.textContent = 'Error: ' + error.message;
       }
 
       btn.textContent = 'Add Banner →';
       btn.disabled    = false;
     };
 
-    /* Load stock list */
+    async function loadBannerList() {
+      const listEl = document.getElementById('banner-list');
+      try {
+        const snapshot = await getDocs(collection(db, 'banners'));
+        const banners  = [];
+        snapshot.forEach(function(d) {
+          banners.push({ id: d.id, ...d.data() });
+        });
+
+        if (banners.length === 0) {
+          listEl.innerHTML =
+            '<p style="color:var(--text-muted)">No banners yet.</p>';
+          return;
+        }
+
+        listEl.innerHTML = banners.map(function(b) {
+          return `
+            <div class="admin-list-row">
+              <div class="admin-list-info">
+                <strong>${b.text}</strong>
+                <span style="font-size:12px;color:var(--text-muted)">
+                  Color: ${b.color} —
+                  Status: ${b.active ? '🟢 Active' : '🔴 Hidden'}
+                </span>
+              </div>
+              <div class="admin-list-actions">
+                <button class="btn-small"
+                  onclick="toggleBanner('${b.id}', ${b.active})">
+                  ${b.active ? '🙈 Hide' : '👁 Show'}
+                </button>
+                <button class="btn-small delete-btn"
+                  onclick="deleteBanner('${b.id}')">
+                  🗑 Delete
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (error) {
+        listEl.innerHTML =
+          '<p style="color:#e24b4a">Error: ' + error.message + '</p>';
+      }
+    }
+
+    window.toggleBanner = async function(id, currentActive) {
+      try {
+        await updateDoc(doc(db, 'banners', id), {
+          active: !currentActive
+        });
+        loadBannerList();
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    };
+
+    window.deleteBanner = async function(id) {
+      if (!confirm('Delete this banner permanently?')) return;
+      try {
+        await deleteDoc(doc(db, 'banners', id));
+        loadBannerList();
+        alert('✅ Banner deleted.');
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    };
+
+    /* ============================================================
+       VIDEOS
+    ============================================================ */
+    window.addVideo = async function() {
+      const title   = document.getElementById('video-title').value.trim();
+      const url     = document.getElementById('video-url').value.trim();
+      const desc    = document.getElementById('video-desc').value.trim();
+      const errorEl = document.getElementById('video-error');
+
+      errorEl.textContent = '';
+
+      if (!title || !url) {
+        errorEl.textContent = 'Please enter a title and YouTube URL.';
+        return;
+      }
+
+      const embedUrl = getYouTubeEmbed(url);
+      if (!embedUrl) {
+        errorEl.textContent =
+          'Invalid YouTube URL. Use format: youtube.com/watch?v=...';
+        return;
+      }
+
+      const btn = document.querySelector('#admin-video .btn-primary');
+      btn.textContent = 'Adding...';
+      btn.disabled    = true;
+
+      try {
+        await addDoc(collection(db, 'videos'), {
+          title, embedUrl, desc: desc || null,
+          createdAt: new Date().toISOString()
+        });
+
+        document.getElementById('video-success').style.display = 'block';
+        ['video-title','video-url','video-desc'].forEach(function(id) {
+          document.getElementById(id).value = '';
+        });
+        setTimeout(function() {
+          document.getElementById('video-success').style.display = 'none';
+        }, 3000);
+        loadVideoList();
+
+      } catch (error) {
+        errorEl.textContent = 'Error: ' + error.message;
+      }
+
+      btn.textContent = 'Add Video →';
+      btn.disabled    = false;
+    };
+
+    async function loadVideoList() {
+      const listEl = document.getElementById('video-list');
+      try {
+        const snapshot = await getDocs(collection(db, 'videos'));
+        const videos   = [];
+        snapshot.forEach(function(d) {
+          videos.push({ id: d.id, ...d.data() });
+        });
+
+        if (videos.length === 0) {
+          listEl.innerHTML =
+            '<p style="color:var(--text-muted)">No videos yet.</p>';
+          return;
+        }
+
+        listEl.innerHTML = videos.map(function(v) {
+          return `
+            <div class="admin-list-row">
+              <div class="admin-list-info">
+                <strong>${v.title}</strong>
+                <span style="font-size:12px;color:var(--text-muted)">
+                  ${v.embedUrl}
+                </span>
+              </div>
+              <div class="admin-list-actions">
+                <button class="btn-small delete-btn"
+                  onclick="deleteVideo('${v.id}')">
+                  🗑 Delete
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (error) {
+        listEl.innerHTML =
+          '<p style="color:#e24b4a">Error: ' + error.message + '</p>';
+      }
+    }
+
+    window.deleteVideo = async function(id) {
+      if (!confirm('Delete this video?')) return;
+      try {
+        await deleteDoc(doc(db, 'videos', id));
+        loadVideoList();
+        alert('✅ Video deleted.');
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    };
+
+    /* ============================================================
+       STOCK
+    ============================================================ */
     async function loadStockList() {
       const listEl = document.getElementById('stock-list');
       try {
         const snapshot = await getDocs(collection(db, 'products'));
         const products = [];
-        snapshot.forEach(function(docSnap) {
-          products.push({ id: docSnap.id, ...docSnap.data() });
+        snapshot.forEach(function(d) {
+          products.push({ id: d.id, ...d.data() });
         });
 
         listEl.innerHTML = products.map(function(p) {
@@ -327,15 +627,9 @@
             <div class="stock-row">
               <span class="stock-name">${p.name}</span>
               <div class="stock-controls">
-                <input
-                  type="number"
-                  class="stock-input"
-                  id="stock-${p.id}"
-                  value="${p.stock}"
-                  min="0"
-                />
-                <button
-                  class="btn-small"
+                <input type="number" class="stock-input"
+                  id="stock-${p.id}" value="${p.stock}" min="0" />
+                <button class="btn-small"
                   onclick="updateStock('${p.id}', '${p.name}')">
                   Update
                 </button>
@@ -346,26 +640,22 @@
 
       } catch (error) {
         listEl.innerHTML =
-          '<p style="color:#e24b4a">Error loading products: ' +
-          error.message + '</p>';
+          '<p style="color:#e24b4a">Error: ' + error.message + '</p>';
       }
     }
 
-    /* Update stock */
     window.updateStock = async function(docId, name) {
       const input    = document.getElementById('stock-' + docId);
       const newStock = parseInt(input.value);
-
       if (isNaN(newStock) || newStock < 0) {
         alert('Please enter a valid stock number.');
         return;
       }
-
       try {
         await updateDoc(doc(db, 'products', docId), { stock: newStock });
-        alert('✅ Stock updated for ' + name + ' → ' + newStock + ' units');
+        alert('✅ Stock updated: ' + name + ' → ' + newStock + ' units');
       } catch (error) {
-        alert('Error updating stock: ' + error.message);
+        alert('Error: ' + error.message);
       }
     };
   </script>

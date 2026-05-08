@@ -181,6 +181,13 @@
     </div>
   </section>
 
+  <!-- ===== COMPANY VIDEOS ===== -->
+<section class="section" id="videos-section" style="display:none">
+  <h2 class="section-title">🎬 Watch Our Story</h2>
+  <p class="section-sub">See how we mill your flour fresh every day</p>
+  <div class="videos-grid" id="videos-grid"></div>
+</section>
+
   <!-- ===== TESTIMONIALS ===== -->
   <section class="testimonials">
     <div class="section">
@@ -400,6 +407,43 @@
   }
 
   loadBanners();
+  /* Load company videos */
+async function loadVideos() {
+  try {
+    const snapshot = await getDocs(collection(db, 'videos'));
+    const videos   = [];
+    snapshot.forEach(function(d) {
+      videos.push({ id: d.id, ...d.data() });
+    });
+
+    if (videos.length === 0) return;
+
+    document.getElementById('videos-section').style.display = 'block';
+    document.getElementById('videos-grid').innerHTML =
+      videos.map(function(v) {
+        return `
+          <div class="video-card">
+            <div class="video-wrap">
+              <iframe src="${v.embedUrl}"
+                frameborder="0" allowfullscreen
+                allow="accelerometer; autoplay; clipboard-write;
+                       encrypted-media; gyroscope; picture-in-picture">
+              </iframe>
+            </div>
+            <div class="video-info">
+              <h4>${v.title}</h4>
+              ${v.desc ? `<p>${v.desc}</p>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+  } catch (error) {
+    console.error('Error loading videos:', error);
+  }
+}
+
+loadVideos();
 </script>
 </body>
 </html>

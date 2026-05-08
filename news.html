@@ -133,33 +133,41 @@
           return;
         }
 
-        grid.innerHTML = articles.map(function(article) {
-          return `
-            <div class="news-card">
-              ${article.imageUrl ? `
-                <img src="${article.imageUrl}"
-                     alt="${article.title}"
-                     class="news-img">
-              ` : `
-                <div class="news-img-placeholder">📰</div>
-              `}
-              <div class="news-body">
-                <div class="news-meta">
-                  <span class="news-category"
-                    style="${getCategoryStyle(article.category)}">
-                    ${article.category || 'News'}
-                  </span>
-                  <span class="news-date">
-                    ${formatDate(article.createdAt)}
-                  </span>
-                </div>
-                <h3 class="news-title">${article.title}</h3>
-                <p class="news-excerpt">${article.excerpt}</p>
-                <div class="news-content">${article.content}</div>
-              </div>
-            </div>
-          `;
-        }).join('');
+       grid.innerHTML = articles.map(function(article) {
+  return `
+    <div class="news-card">
+      ${article.imageUrl ? `
+        <img src="${article.imageUrl}"
+             alt="${article.title}" class="news-img">
+      ` : article.videoUrl ? `
+        <div class="news-video-wrap">
+          <iframe src="${article.videoUrl}"
+            frameborder="0"
+            allowfullscreen
+            allow="accelerometer; autoplay; clipboard-write;
+                   encrypted-media; gyroscope; picture-in-picture">
+          </iframe>
+        </div>
+      ` : `
+        <div class="news-img-placeholder">📰</div>
+      `}
+      <div class="news-body">
+        <div class="news-meta">
+          <span class="news-category"
+            style="${getCategoryStyle(article.category)}">
+            ${article.category || 'News'}
+          </span>
+          <span class="news-date">
+            ${formatDate(article.createdAt)}
+          </span>
+        </div>
+        <h3 class="news-title">${article.title}</h3>
+        <p class="news-excerpt">${article.excerpt}</p>
+        <div class="news-content">${article.content}</div>
+      </div>
+    </div>
+  `;
+}).join('');
 
       } catch (error) {
         console.error('Error loading news:', error);
