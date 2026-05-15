@@ -482,13 +482,22 @@ async function awardPointsForOrder(total) {
 
 function whatsappOrder() {
   if (cart.length === 0) { showToast('Add items to your cart first!'); return; }
+
   const lines = cart.map(function(item) {
-    return item.name + ' (' + item.size + ') ×' + item.qty;
-  }).join(', ');
+    return item.name + ' (' + item.size + ') x' + item.qty +
+           ' = KSh ' + (item.price * item.qty).toLocaleString();
+  }).join('\n');
+
   const total = cart.reduce(function(s, c) { return s + c.price * c.qty; }, 0);
-  const msg   = 'Hello Pembe Flour Millers! I would like to order: '
-    + lines + '. Total: KSh ' + total.toLocaleString()
-    + '. Please confirm. Thank you!';
+
+  /* Special prefix so the bot knows this came from the website */
+  const msg =
+    'WEBSITE_ORDER\n' +
+    '─────────────────\n' +
+    lines + '\n' +
+    '─────────────────\n' +
+    'Total: KSh ' + total.toLocaleString();
+
   window.open(
     'https://wa.me/254745319126?text=' + encodeURIComponent(msg),
     '_blank'
