@@ -480,26 +480,29 @@ async function awardPointsForOrder(total) {
   }
 }
 
+/* WhatsApp order button */
 function whatsappOrder() {
-  if (cart.length === 0) { showToast('Add items to your cart first!'); return; }
+  if (cart.length === 0) {
+    showToast('Add items to your cart first!');
+    return;
+  }
 
   const lines = cart.map(function(item) {
-    return item.name + ' (' + item.size + ') x' + item.qty +
-           ' = KSh ' + (item.price * item.qty).toLocaleString();
-  }).join('\n');
+    return item.name + ' x' + item.qty +
+      ' (' + item.size + ')';
+  }).join(', ');
 
-  const total = cart.reduce(function(s, c) { return s + c.price * c.qty; }, 0);
+  const total = cart.reduce(function(s, c) {
+    return s + c.price * c.qty;
+  }, 0);
 
-  /* Special prefix so the bot knows this came from the website */
   const msg =
-    'WEBSITE_ORDER\n' +
-    '─────────────────\n' +
-    lines + '\n' +
-    '─────────────────\n' +
-    'Total: KSh ' + total.toLocaleString();
+    'ORDER: ' + lines +
+    ' | Total: KSh ' + total.toLocaleString();
 
   window.open(
-    'https://wa.me/254745319126?text=' + encodeURIComponent(msg),
+    'https://wa.me/254700721761?text=' +
+    encodeURIComponent(msg),
     '_blank'
   );
 }
